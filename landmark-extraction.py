@@ -15,16 +15,28 @@ building_layer = layers[0]
 #     Road distance
 # Semantic (Historical importance)
 # Pragmatic (Landuse 200 m)
-building_layer.dataProvider().addAttributes([
-    QgsField("3d_visibility", QVariant.Double),
-#    QgsField("facade_area", QVariant.Double),
-#    QgsField("height", QVariant.Double),
-#    QgsField("area", QVariant.Double),
-#    QgsField("2d_advance_visibility", QVariant.Double),
-#    QgsField("road_distance", QVariant.Double),
-#    QgsField("historical_importance", QVariant.Double),
-#    QgsField("landuse", QVariant.Double),
- ])
+
+field_names = [
+    '3d_visibility',
+    'facade_area',
+    'height',
+    'area',
+    '2d_advance_visibility',
+    'neighbours',
+    'road_distance',
+    'historical_importance',
+    'land_use',
+]
+
+fields = [
+    QgsField(field_name, QVariant.Double) for field_name in field_names if building_layer.fields().indexFromName(field_name) == -1
+]
+
+if building_layer.fields().indexFromName('landmark_index') == -1:
+    fields.append(QgsField('landmark_index', QVariant.Bool))
+
+building_layer.dataProvider().addAttributes(fields)
+
  
 building_layer.updateFields()
  

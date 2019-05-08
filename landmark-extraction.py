@@ -16,7 +16,7 @@
 # Pragmatic (Landuse 200 m) 0.1
 
 # Choosing the layer
-layers = QgsProject.instance().mapLayersByName('Test')
+layers = QgsProject.instance().mapLayersByName('Small test')
 building_layer = layers[0]
 
 field_names = [
@@ -92,6 +92,39 @@ def calculate_facade(layer):
         i += 1
     layer.commitChanges()
 
+def calculate_land_use(layer, buffer_distance=200, type_field_name='lu_eng'):
+    # Calculating pragmatic index for land use
+    # Create buffer of 200 meter, then calculate the area of same type building compare to total area
+    print('Calculate land use index')
+    land_use_field = layer.fields().indexFromName('land_use')
+    building_type_field = layer.fields().indexFromName(type_field_name)
+    
+    land_use_value = []
+    for feature in layer.getFeatures():
+        # create buffer
+        buffer = feature.geometry().buffer(200, 5)
+        current_building_type = feature.attributes()[building_type_field]
+        # filter layer with the same building type
+        same_building_area = 0
+        for feature2 in layer.getFeatures():
+            if feature2.attributes()[building_type_field] == current_building_type:
+               if feature2.geometry().intersects(buffer):
+                   same_building_area += feature2.geometry().area()
+        # calculate total building area
+        # get land use value (total building area/buffer area)
+        land_use_value.append(1 - (same_building_area / buffer.area()))
+    max_land_use = max(land_use_value)
+    min_land_use = min(land_use_value)
+    range_land_use = max_land_use - min_land_use
+    layer.startEditing()
+    i = 0
+    for feature in layer.getFeatures():
+        land_use_index = (land_use_value[i] - min_land_use) / range_land_use
+        layer.changeAttributeValue(feature.id(), land_use_field, land_use_index)
+        i += 1
+    layer.commitChanges()
+
+
 def calculate_landmark_index(layer):
     # Calculate landmark index
     # Formula
@@ -99,6 +132,7 @@ def calculate_landmark_index(layer):
     height_index_field = layer.fields().indexFromName('height_index')
     area_index_field = layer.fields().indexFromName('area_index')
     facade_field = layer.fields().indexFromName('facade_area')
+    land_use_field = layer.fields().indexFromName('land_use')
     landmark_index_field = layer.fields().indexFromName('landmark_index')
 
     layer.startEditing()
@@ -106,9 +140,10 @@ def calculate_landmark_index(layer):
         height_index = feature.attributes()[height_index_field]
         area_index = feature.attributes()[area_index_field]
         facade = feature.attributes()[facade_field]
+        land_use = feature.attributes()[land_use_field]
 
-        division = 0.1 + 0.09 + 0.15
-        landmark_index = (height_index * 0.1 + area_index * 0.09 + facade * 0.15) / division
+        division = 0.1 + 0.09 + 0.15 + 0.1
+        landmark_index = (height_index * 0.1 + area_index * 0.09 + facade * 0.15 + land_use * 0.1) / division
         layer.changeAttributeValue(feature.id(), landmark_index_field, landmark_index)
     
     layer.commitChanges()
@@ -128,9 +163,10 @@ def calculate_landmark_status(layer, threshold=0.5):
     layer.commitChanges()
 
 # Updating the component's value.
-update_height_index(building_layer)
-update_area_index(building_layer)
-calculate_facade(building_layer)
+# update_height_index(building_layer)
+# update_area_index(building_layer)
+# calculate_facade(building_layer)
+calculate_land_use(building_layer, 200, 'lu_eng')
 calculate_landmark_index(building_layer)
 calculate_landmark_status(building_layer)
 

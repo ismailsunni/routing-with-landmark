@@ -4,16 +4,16 @@
 # Add new fields
 # Check if fields exists
 # Visual 
-#     3D Visibility
-#     Facade area 
-#     Height
+#     3D Visibility 0.5 * 0.5 = 0.25
+#     Facade area  0.3 * 0.5 = 0.15
+#     Height 0.2 * 0.5 = 0.1
 # Structural
-#     Area 
-#     2D-Advance visibility 
-#     Neighbours
-#     Road distance
-# Semantic (Historical importance)
-# Pragmatic (Landuse 200 m)
+#     Area 0.3 * 0.3 = 0.09
+#     2D-Advance visibility 0.3 * 0.3 = 0.09
+#     Neighbours 0.2
+#     Road distance 0.2
+# Semantic (Historical importance) 0.1
+# Pragmatic (Landuse 200 m) 0.1
 
 # Choosing the layer
 layers = QgsProject.instance().mapLayersByName('Test')
@@ -50,9 +50,11 @@ def update_height_index(layer):
     height_index_field = layer.fields().indexFromName('height_index')
     height_field = layer.fields().indexFromName('height')
     max_height = layer.maximumValue(height_field)
+    min_height = layer.minimumValue(height_field)
+    range_height = max_height - min_height
     layer.startEditing()
     for feature in layer.getFeatures():
-        height_index = feature.attributes()[height_field] / max_height
+        height_index = (feature.attributes()[height_field] - min_height) / range_height
         layer.changeAttributeValue(feature.id(), height_index_field, height_index)
     layer.commitChanges()
     
@@ -62,28 +64,12 @@ def update_area_index(layer):
     area_index_field = layer.fields().indexFromName('area_index')
     area_field = layer.fields().indexFromName('area')
     max_area = layer.maximumValue(area_field)
+    min_area = layer.minimumValue(area_field)
+    range_area = max_area - min_area
     layer.startEditing()
     for feature in layer.getFeatures():
-        area_index = feature.attributes()[area_field] / max_area
+        area_index = (feature.attributes()[area_field] - min_area) / range_area
         layer.changeAttributeValue(feature.id(), area_index_field, area_index)
-    layer.commitChanges()
-
-def calculate_landmark_index(layer):
-    # Calculate landmark index
-    # Formula height * 0.2 * 0.5 + area * 0.3 * 0.3
-    print('Calculate landmark index')
-    height_index_field = layer.fields().indexFromName('height_index')
-    area_index_field = layer.fields().indexFromName('area_index')
-    landmark_index_field = layer.fields().indexFromName('landmark_index')
-
-    layer.startEditing()
-    for feature in layer.getFeatures():
-        height_index = feature.attributes()[height_index_field]
-        area_index = feature.attributes()[area_index_field]
-
-        landmark_index = (height_index * 0.1 + area_index * 0.09) / 0.19
-        layer.changeAttributeValue(feature.id(), landmark_index_field, landmark_index)
-    
     layer.commitChanges()
 
 def calculate_facade(layer):
@@ -104,6 +90,27 @@ def calculate_facade(layer):
         facade_index = (facade_values[i] - min(facade_values)) / facade_range
         layer.changeAttributeValue(feature.id(), facade_field, facade_index)
         i += 1
+    layer.commitChanges()
+
+def calculate_landmark_index(layer):
+    # Calculate landmark index
+    # Formula
+    print('Calculate landmark index')
+    height_index_field = layer.fields().indexFromName('height_index')
+    area_index_field = layer.fields().indexFromName('area_index')
+    facade_field = layer.fields().indexFromName('facade_area')
+    landmark_index_field = layer.fields().indexFromName('landmark_index')
+
+    layer.startEditing()
+    for feature in layer.getFeatures():
+        height_index = feature.attributes()[height_index_field]
+        area_index = feature.attributes()[area_index_field]
+        facade = feature.attributes()[facade_field]
+
+        division = 0.1 + 0.09 + 0.15
+        landmark_index = (height_index * 0.1 + area_index * 0.09 + facade * 0.15) / division
+        layer.changeAttributeValue(feature.id(), landmark_index_field, landmark_index)
+    
     layer.commitChanges()
 
 def calculate_landmark_status(layer, threshold=0.5):

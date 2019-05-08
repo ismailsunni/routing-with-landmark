@@ -86,7 +86,45 @@ def calculate_landmark_index(layer):
     
     layer.commitChanges()
 
+def calculate_facade(layer):
+    # Calculating facade index, normalize to 0 - 1
+    print('Calculate facade index')
+    height_field = layer.fields().indexFromName('height')
+    facade_field = layer.fields().indexFromName('facade_area')
+
+    facade_values = []
+    for feature in layer.getFeatures():
+        height_index = feature.attributes()[height_field]
+        perimeter = feature.geometry().length() 
+        facade_values.append(height_index * perimeter)
+    facade_range = max(facade_values) - min(facade_values)
+    layer.startEditing()
+    i = 0
+    for feature in layer.getFeatures():
+        facade_index = (facade_values[i] - min(facade_values)) / facade_range
+        layer.changeAttributeValue(feature.id(), facade_field, facade_index)
+        i += 1
+    layer.commitChanges()
+
+def calculate_landmark_status(layer, threshold=0.5):
+    # Set landmark status
+    print('Calculate landmark status')
+    landmark_index_field = layer.fields().indexFromName('landmark_index')
+    landmark_status_field = layer.fields().indexFromName('landmark_status')
+
+    layer.startEditing()
+    for feature in layer.getFeatures():
+        landmark_index = feature.attributes()[landmark_index_field]
+
+        layer.changeAttributeValue(feature.id(), landmark_status_field, landmark_index > threshold)
+    
+    layer.commitChanges()
+
 # Updating the component's value.
 update_height_index(building_layer)
 update_area_index(building_layer)
+calculate_facade(building_layer)
 calculate_landmark_index(building_layer)
+calculate_landmark_status(building_layer)
+
+print('fin')

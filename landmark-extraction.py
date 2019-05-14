@@ -94,7 +94,7 @@ def calculate_facade(layer):
 
 def calculate_land_use(layer, buffer_distance=200, type_field_name='lu_eng'):
     # Calculating pragmatic index for land use
-    # Create buffer of 200 meter, then calculate the area of same type building compare to total area
+    # Create buffer of 200 meter, then calculate the number of same type building compare to total building
     print('Calculate land use index')
     land_use_field = layer.fields().indexFromName('land_use')
     building_type_field = layer.fields().indexFromName(type_field_name)
@@ -105,14 +105,16 @@ def calculate_land_use(layer, buffer_distance=200, type_field_name='lu_eng'):
         buffer = feature.geometry().buffer(200, 5)
         current_building_type = feature.attributes()[building_type_field]
         # filter layer with the same building type
-        same_building_area = 0
+        same_building_count = 0
+        all_building_count = 0
         for feature2 in layer.getFeatures():
-            if feature2.attributes()[building_type_field] == current_building_type:
-               if feature2.geometry().intersects(buffer):
-                   same_building_area += feature2.geometry().area()
+            if feature2.geometry().intersects(buffer):
+                all_building_count += 1
+                if feature2.attributes()[building_type_field] == current_building_type:
+                   same_building_count += 1
         # calculate total building area
         # get land use value (total building area/buffer area)
-        land_use_value.append(1 - (same_building_area / buffer.area()))
+        land_use_value.append(1 - (same_building_count / all_building_count))
     max_land_use = max(land_use_value)
     min_land_use = min(land_use_value)
     range_land_use = max_land_use - min_land_use

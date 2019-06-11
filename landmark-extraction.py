@@ -15,10 +15,6 @@
 # Semantic (Historical importance) 0.1
 # Pragmatic (Landuse 200 m) 0.1
 
-# Choosing the layer
-layers = QgsProject.instance().mapLayersByName('Small test')
-building_layer = layers[0]
-
 field_names = [
     '3d_visibility',
     'facade_area',
@@ -31,18 +27,6 @@ field_names = [
     'land_use',
     'landmark_index',
 ]
-# Create intermediate fields for storing the values
-fields = [
-    QgsField(field_name, QVariant.Double) for field_name in field_names if building_layer.fields().indexFromName(field_name) == -1
-]
-
-# Create landmark_status for the final 
-if building_layer.fields().indexFromName('landmark_status') == -1:
-    fields.append(QgsField('landmark_status', QVariant.Bool))
-
-# Add the fields to the layer
-building_layer.dataProvider().addAttributes(fields)
-building_layer.updateFields()
  
 def update_height_index(layer):
     # Height index
@@ -193,13 +177,33 @@ def calculate_landmark_status(layer, threshold=0.5):
     
     layer.commitChanges()
 
+# Choosing the layer
+small_test = QgsProject.instance().mapLayersByName('Small test')[0]
+full_test = QgsProject.instance().mapLayersByName('Test')[0]
+
+building_layer = full_test
+
+# Create intermediate fields for storing the values
+fields = [
+    QgsField(field_name, QVariant.Double) for field_name in field_names if building_layer.fields().indexFromName(field_name) == -1
+]
+
+# Create landmark_status for the final 
+if building_layer.fields().indexFromName('landmark_status') == -1:
+    fields.append(QgsField('landmark_status', QVariant.Bool))
+
+# Add the fields to the layer
+building_layer.dataProvider().addAttributes(fields)
+building_layer.updateFields()
+
+
 # Updating the component's value.
-# update_height_index(building_layer)
-# update_area_index(building_layer)
-# calculate_facade(building_layer)
-# calculate_land_use(building_layer, 200, 'lu_eng')
-calculate_neighbours(building_layer)
-calculate_landmark_index(building_layer)
-calculate_landmark_status(building_layer)
+#update_height_index(building_layer)
+#update_area_index(building_layer)
+#calculate_facade(building_layer)
+calculate_land_use(building_layer, 200, 'lu_eng')
+#calculate_neighbours(building_layer)
+#calculate_landmark_index(building_layer)
+#calculate_landmark_status(building_layer)
 
 print('fin')

@@ -284,7 +284,8 @@ def calculate_landmark_status(layer, threshold=0.5):
 
 # Load layer, used in external script
 small_test_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_test_building.gpkg|layername=small_test'
-building_layer = QgsVectorLayer(small_test_path, 'Small test', 'ogr')
+full_test_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/Building_casestudy_area_3.gpkg|layername=Buildning_caseStudy_area_3'
+building_layer = QgsVectorLayer(small_test_path, 'building', 'ogr')
 if not building_layer.isValid():
     print('Layer invalid')
 

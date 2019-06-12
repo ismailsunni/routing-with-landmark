@@ -46,6 +46,15 @@ field_names = [
     'landmark_index',
 ]
  
+def create_spatial_index(layer):
+    # Select all features along with their attributes
+    all_features = {feature.id(): feature for (feature) in layer.getFeatures()}
+    # Create spatial index
+    spatial_index = QgsSpatialIndex()
+    for f in all_features.values():
+        spatial_index.addFeature(f)
+    return spatial_index
+
 def update_height_index(layer):
     # Height index
     print('Update height index')
@@ -139,9 +148,7 @@ def calculate_land_use_spatial_index(layer, buffer_distance=200, type_field_name
     # Select all features along with their attributes
     all_features = {feature.id(): feature for (feature) in layer.getFeatures()}
     # Create spatial index
-    spatial_index = QgsSpatialIndex()
-    for f in all_features.values():
-        spatial_index.addFeature(f)
+    spatial_index = create_spatial_index(layer)
     
     land_use_value = []
     for feature in layer.getFeatures():
@@ -186,9 +193,7 @@ def calculate_neighbours_spatial_index(layer, buffer_distance=150):
     all_features = {feature.id(): feature for (feature) in layer.getFeatures()}
 
     # Create spatial index
-    spatial_index = QgsSpatialIndex()
-    for f in all_features.values():
-        spatial_index.addFeature(f)
+    spatial_index = create_spatial_index(layer)
 
     neighbours_values = []
     for feature in layer.getFeatures():
@@ -226,9 +231,7 @@ def calculate_historical_importance(layer, historic_layer):
     layer.commitChanges()
     
     # Create spatial index
-    spatial_index = QgsSpatialIndex()
-    for f in all_features.values():
-        spatial_index.addFeature(f)
+    spatial_index = create_spatial_index(layer)
 
     layer.startEditing()
     for historic_feature in historic_layer.getFeatures():
@@ -246,7 +249,6 @@ def calculate_historical_importance(layer, historic_layer):
 
 def calculate_landmark_index(layer):
     # Calculate landmark index
-    # Formula
     print('Calculate landmark index')
     height_index_field = layer.fields().indexFromName('height_index')
     area_index_field = layer.fields().indexFromName('area_index')
@@ -296,52 +298,58 @@ def calculate_landmark_status(layer, threshold=0.5):
     
     layer.commitChanges()
 
-# Choosing the layer (used in QGIS)
-# small_test = QgsProject.instance().mapLayersByName('Small test')[0]
-# full_test = QgsProject.instance().mapLayersByName('Test')[0]
 
-# Load layer, used in external script
-small_test_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_test_building.gpkg|layername=small_test'
-full_test_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/Building_casestudy_area_3.gpkg|layername=Buildning_caseStudy_area_3'
-building_layer = QgsVectorLayer(full_test_path, 'building', 'ogr')
+if __name__ == "__main__":
+    # Choosing the layer (used in QGIS)
+    # small_test = QgsProject.instance().mapLayersByName('Small test')[0]
+    # full_test = QgsProject.instance().mapLayersByName('Test')[0]
 
-if not building_layer.isValid():
-    print('Building layer invalid')
+    # Load layer, used in external script
+    small_test_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_test_building.gpkg|layername=small_test'
+    full_test_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/Building_casestudy_area_3.gpkg|layername=Buildning_caseStudy_area_3'
+    building_layer = QgsVectorLayer(full_test_path, 'building', 'ogr')
 
-historical_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/historical_3044.gpkg|layername=historical building muenster'
-historical_layer = QgsVectorLayer(historical_path, 'historical', 'ogr')
-if not historical_layer.isValid():
-    print('Historical layer invalid')
+    if not building_layer.isValid():
+        print('Building layer invalid')
 
-# Create intermediate fields for storing the values
-fields = [
-    QgsField(field_name, QVariant.Double) for field_name in field_names if building_layer.fields().indexFromName(field_name) == -1
-]
+    historical_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/historical_3044.gpkg|layername=historical building muenster'
+    historical_layer = QgsVectorLayer(historical_path, 'historical', 'ogr')
+    if not historical_layer.isValid():
+        print('Historical layer invalid')
 
-# Create landmark_status for the final 
-if building_layer.fields().indexFromName('landmark_status') == -1:
-    fields.append(QgsField('landmark_status', QVariant.Bool))
+    # Create intermediate fields for storing the values
+    fields = [
+        QgsField(field_name, QVariant.Double) for field_name in field_names if building_layer.fields().indexFromName(field_name) == -1
+    ]
 
-# Add the fields to the layer
-building_layer.dataProvider().addAttributes(fields)
-building_layer.updateFields()
+    # Create landmark_status for the final 
+    if building_layer.fields().indexFromName('landmark_status') == -1:
+        fields.append(QgsField('landmark_status', QVariant.Bool))
 
-start = datetime.now()
-# Updating the component's value.
-update_height_index(building_layer)
-update_area_index(building_layer)
-calculate_facade(building_layer)
-end = datetime.now()
-print('Duration: ' + str((end - start)))
+    # Add the fields to the layer
+    building_layer.dataProvider().addAttributes(fields)
+    building_layer.updateFields()
 
-start = datetime.now()
-calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
-calculate_neighbours_spatial_index(building_layer)
-calculate_historical_importance(building_layer, historical_layer)
-end = datetime.now()
-print('Duration: ' + str((end - start)))
+    start = datetime.now()
 
-calculate_landmark_index(building_layer)
-calculate_landmark_status(building_layer)
+    # Updating the component's value.
+    update_height_index(building_layer)
+    update_area_index(building_layer)
+    calculate_facade(building_layer)
+    calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
+    calculate_neighbours_spatial_index(building_layer)
+    calculate_historical_importance(building_layer, historical_layer)
+    calculate_landmark_index(building_layer)
+    calculate_landmark_status(building_layer)
 
-print('fin')
+    end = datetime.now()
+    print('Duration: ' + str((end - start)))
+
+    # Summary
+    landmarks = building_layer.getFeatures('"landmark_status" = true')
+    print('Summary: ')
+    print('Number of landmarks: %s' % len(list(landmarks)))
+    print('Total buildings: %s' % building_layer.featureCount())
+
+    print('fin')
+

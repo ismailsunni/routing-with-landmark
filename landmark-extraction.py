@@ -15,6 +15,23 @@
 # Semantic (Historical importance) 0.1
 # Pragmatic (Landuse 200 m) 0.1
 
+from datetime import datetime
+import os
+import sys
+import qgis.utils
+
+from qgis.PyQt.QtCore import QVariant
+from qgis.core import (
+    QgsApplication, 
+    QgsVectorLayer,
+    QgsProject,
+    QgsField
+)
+
+QgsApplication.setPrefixPath('/usr', True)
+qgs = QgsApplication([], False)
+qgs.initQgis()
+
 field_names = [
     '3d_visibility',
     'facade_area',
@@ -177,11 +194,15 @@ def calculate_landmark_status(layer, threshold=0.5):
     
     layer.commitChanges()
 
-# Choosing the layer
-small_test = QgsProject.instance().mapLayersByName('Small test')[0]
-full_test = QgsProject.instance().mapLayersByName('Test')[0]
+# Choosing the layer (used in QGIS)
+# small_test = QgsProject.instance().mapLayersByName('Small test')[0]
+# full_test = QgsProject.instance().mapLayersByName('Test')[0]
 
-building_layer = full_test
+# Load layer, used in external script
+small_test_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_test_building.gpkg|layername=small_test'
+building_layer = QgsVectorLayer(small_test_path, 'Small test', 'ogr')
+if not building_layer.isValid():
+    print('Layer invalid')
 
 # Create intermediate fields for storing the values
 fields = [
@@ -196,7 +217,7 @@ if building_layer.fields().indexFromName('landmark_status') == -1:
 building_layer.dataProvider().addAttributes(fields)
 building_layer.updateFields()
 
-
+start = datetime.now()
 # Updating the component's value.
 #update_height_index(building_layer)
 #update_area_index(building_layer)
@@ -205,5 +226,6 @@ calculate_land_use(building_layer, 200, 'lu_eng')
 #calculate_neighbours(building_layer)
 #calculate_landmark_index(building_layer)
 #calculate_landmark_status(building_layer)
-
+end = datetime.now()
+print('Duration: ' + str((end - start)))
 print('fin')

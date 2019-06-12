@@ -45,6 +45,8 @@ field_names = [
     'land_use',
     'landmark_index',
 ]
+
+DEBUG_MODE = True
  
 def create_spatial_index(layer):
     # Select all features along with their attributes
@@ -55,9 +57,13 @@ def create_spatial_index(layer):
         spatial_index.addFeature(f)
     return spatial_index
 
+def debug(message):
+    if DEBUG_MODE:
+        print(message)
+
 def update_height_index(layer):
     # Height index
-    print('Update height index')
+    debug('Update height index')
     height_index_field = layer.fields().indexFromName('height_index')
     height_field = layer.fields().indexFromName('height')
     max_height = layer.maximumValue(height_field)
@@ -71,7 +77,7 @@ def update_height_index(layer):
     
 def update_area_index(layer):
     # Height index
-    print('Update area index')
+    debug('Update area index')
     area_index_field = layer.fields().indexFromName('area_index')
     area_field = layer.fields().indexFromName('area')
     max_area = layer.maximumValue(area_field)
@@ -85,7 +91,7 @@ def update_area_index(layer):
 
 def calculate_facade(layer):
     # Calculating facade index, normalize to 0 - 1
-    print('Calculate facade index')
+    debug('Calculate facade index')
     height_field = layer.fields().indexFromName('height')
     facade_field = layer.fields().indexFromName('facade_area')
 
@@ -106,7 +112,7 @@ def calculate_facade(layer):
 def calculate_land_use(layer, buffer_distance=200, type_field_name='lu_eng'):
     # Calculating pragmatic index for land use
     # Create buffer of 200 meter, then calculate the number of same type building compare to total building
-    print('Calculate land use index')
+    debug('Calculate land use index')
     land_use_field = layer.fields().indexFromName('land_use')
     building_type_field = layer.fields().indexFromName(type_field_name)
     
@@ -140,7 +146,7 @@ def calculate_land_use(layer, buffer_distance=200, type_field_name='lu_eng'):
 def calculate_land_use_spatial_index(layer, buffer_distance=200, type_field_name='lu_eng'):
     # Calculating pragmatic index for land use
     # Create buffer of 200 meter, then calculate the number of same type building compare to total building
-    print('Calculate land use index')
+    debug('Calculate land use index')
 
     land_use_field = layer.fields().indexFromName('land_use')
     building_type_field = layer.fields().indexFromName(type_field_name)
@@ -160,7 +166,7 @@ def calculate_land_use_spatial_index(layer, buffer_distance=200, type_field_name
         all_building_count = len(intersect_indexes)
         same_building_count = 0
         for intersect_index in intersect_indexes:
-            # print(all_features[intersect_index].attributes()[building_type_field])
+            # debug(all_features[intersect_index].attributes()[building_type_field])
             if all_features[intersect_index].attributes()[building_type_field] == current_building_type:
                 same_building_count += 1
         # calculate total building area
@@ -186,11 +192,8 @@ def calculate_land_use_spatial_index(layer, buffer_distance=200, type_field_name
 def calculate_neighbours_spatial_index(layer, buffer_distance=150):
     # Calculating adjacent neighbour
     # Create buffer of 150 meter, then calculate the number of same building
-    print('Calculate neighbours index')
+    debug('Calculate neighbours index')
     neighbours_field = layer.fields().indexFromName('neighbours')
-    
-    # Select all features along with their attributes
-    all_features = {feature.id(): feature for (feature) in layer.getFeatures()}
 
     # Create spatial index
     spatial_index = create_spatial_index(layer)
@@ -219,7 +222,7 @@ def calculate_neighbours_spatial_index(layer, buffer_distance=150):
 def calculate_historical_importance(layer, historic_layer):
     # Set historical status based on historical layer
     # All polygon in historical layer is assumed to be historic
-    print('Calculate historical importance')
+    debug('Calculate historical importance')
     historical_field = layer.fields().indexFromName('historical_importance')
 
     layer.startEditing()
@@ -239,8 +242,8 @@ def calculate_historical_importance(layer, historic_layer):
             continue
         geometry = historic_feature.geometry()
         intersect_indexes = spatial_index.intersects(geometry.boundingBox())
-        print(historic_feature.attributes()[8])
-        print(len(intersect_indexes))
+        debug(historic_feature.attributes()[8])
+        debug(len(intersect_indexes))
         for intersect_index in intersect_indexes:
             feature = all_features[intersect_index]
             # all_features[intersect_index].setAttribute(historical_field, 1.0)
@@ -249,7 +252,7 @@ def calculate_historical_importance(layer, historic_layer):
 
 def calculate_landmark_index(layer):
     # Calculate landmark index
-    print('Calculate landmark index')
+    debug('Calculate landmark index')
     height_index_field = layer.fields().indexFromName('height_index')
     area_index_field = layer.fields().indexFromName('area_index')
     facade_field = layer.fields().indexFromName('facade_area')
@@ -286,7 +289,7 @@ def calculate_landmark_index(layer):
 
 def calculate_landmark_status(layer, threshold=0.5):
     # Set landmark status
-    print('Calculate landmark status')
+    debug('Calculate landmark status')
     landmark_index_field = layer.fields().indexFromName('landmark_index')
     landmark_status_field = layer.fields().indexFromName('landmark_status')
 
@@ -303,6 +306,9 @@ if __name__ == "__main__":
     # Choosing the layer (used in QGIS)
     # small_test = QgsProject.instance().mapLayersByName('Small test')[0]
     # full_test = QgsProject.instance().mapLayersByName('Test')[0]
+
+    # Debug mode
+    DEBUG_MODE = True
 
     # Load layer, used in external script
     small_test_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_test_building.gpkg|layername=small_test'
@@ -343,11 +349,11 @@ if __name__ == "__main__":
     calculate_landmark_status(building_layer)
 
     end = datetime.now()
-    print('Duration: ' + str((end - start)))
 
     # Summary
     landmarks = building_layer.getFeatures('"landmark_status" = true')
     print('Summary: ')
+    print('Duration: ' + str((end - start)))
     print('Number of landmarks: %s' % len(list(landmarks)))
     print('Total buildings: %s' % building_layer.featureCount())
 

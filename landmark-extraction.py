@@ -25,7 +25,8 @@ from qgis.core import (
     QgsApplication, 
     QgsVectorLayer,
     QgsProject,
-    QgsField
+    QgsField,
+    QgsSpatialIndex
 )
 
 QgsApplication.setPrefixPath('/usr', True)
@@ -127,6 +128,53 @@ def calculate_land_use(layer, buffer_distance=200, type_field_name='lu_eng'):
         i += 1
     layer.commitChanges()
 
+def calculate_land_use_spatial_index(layer, buffer_distance=200, type_field_name='lu_eng'):
+    # Select all features along with their attributes
+    all_features = {feature.id(): feature for (feature) in layer.getFeatures()}
+    # Create spatial index
+    spatial_index = QgsSpatialIndex()
+    for f in all_features.values():
+        spatial_index.insertFeature(f)
+    # map(spatial_index.insertFeature, all_features.values())
+    # Calculating pragmatic index for land use
+    # Create buffer of 200 meter, then calculate the number of same type building compare to total building
+    print('Calculate land use index')
+    land_use_field = layer.fields().indexFromName('land_use')
+    building_type_field = layer.fields().indexFromName(type_field_name)
+    
+    land_use_value = []
+    for feature in layer.getFeatures():
+        # create buffer
+        buffer = feature.geometry().buffer(buffer_distance, 5)
+        current_building_type = feature.attributes()[building_type_field]
+        # filter layer with the same building type
+        intersect_indexes = spatial_index.intersects(buffer.boundingBox())
+        all_building_count = len(intersect_indexes)
+        same_building_count = 0
+        for intersect_index in intersect_indexes:
+            # print(all_features[intersect_index].attributes()[building_type_field])
+            if all_features[intersect_index].attributes()[building_type_field] == current_building_type:
+                same_building_count += 1
+        # calculate total building area
+        # get land use value (total building area/buffer area)
+        if all_building_count == 0:
+            land_use_value.append(1)
+        else:
+            land_use_value.append(1 - (same_building_count / all_building_count))
+    max_land_use = max(land_use_value)
+    min_land_use = min(land_use_value)
+    range_land_use = max_land_use - min_land_use
+    layer.startEditing()
+    i = 0
+    for feature in layer.getFeatures():
+        if range_land_use == 0:
+            land_use_index = 1
+        else:
+            land_use_index = (land_use_value[i] - min_land_use) / range_land_use
+        layer.changeAttributeValue(feature.id(), land_use_field, land_use_index)
+        i += 1
+    layer.commitChanges()
+
 def calculate_neighbours(layer, buffer_distance=150):
     # Calculating adjacent neighbour
     # Create buffer of 150 meter, then calculate the number of same building
@@ -222,10 +270,15 @@ start = datetime.now()
 #update_height_index(building_layer)
 #update_area_index(building_layer)
 #calculate_facade(building_layer)
-calculate_land_use(building_layer, 200, 'lu_eng')
+# calculate_land_use(building_layer, 200, 'lu_eng')
 #calculate_neighbours(building_layer)
 #calculate_landmark_index(building_layer)
 #calculate_landmark_status(building_layer)
+end = datetime.now()
+print('Duration: ' + str((end - start)))
+
+start = datetime.now()
+calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
 end = datetime.now()
 print('Duration: ' + str((end - start)))
 print('fin')

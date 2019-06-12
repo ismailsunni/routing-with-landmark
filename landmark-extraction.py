@@ -129,18 +129,19 @@ def calculate_land_use(layer, buffer_distance=200, type_field_name='lu_eng'):
     layer.commitChanges()
 
 def calculate_land_use_spatial_index(layer, buffer_distance=200, type_field_name='lu_eng'):
+    # Calculating pragmatic index for land use
+    # Create buffer of 200 meter, then calculate the number of same type building compare to total building
+    print('Calculate land use index')
+
+    land_use_field = layer.fields().indexFromName('land_use')
+    building_type_field = layer.fields().indexFromName(type_field_name)
+
     # Select all features along with their attributes
     all_features = {feature.id(): feature for (feature) in layer.getFeatures()}
     # Create spatial index
     spatial_index = QgsSpatialIndex()
     for f in all_features.values():
-        spatial_index.insertFeature(f)
-    # map(spatial_index.insertFeature, all_features.values())
-    # Calculating pragmatic index for land use
-    # Create buffer of 200 meter, then calculate the number of same type building compare to total building
-    print('Calculate land use index')
-    land_use_field = layer.fields().indexFromName('land_use')
-    building_type_field = layer.fields().indexFromName(type_field_name)
+        spatial_index.addFeature(f)
     
     land_use_value = []
     for feature in layer.getFeatures():
@@ -190,6 +191,41 @@ def calculate_neighbours(layer, buffer_distance=150):
         for feature2 in layer.getFeatures():
             if feature2.geometry().intersects(buffer):
                 building_count += 1
+        neighbours_values.append(building_count)
+    
+    max_neighbours = max(neighbours_values)
+    min_neighbours = min(neighbours_values)
+    range_neighbours = max_neighbours - min_neighbours
+    layer.startEditing()
+    i = 0
+    for feature in layer.getFeatures():
+        neighbours_index = (neighbours_values[i] - min_neighbours) / range_neighbours
+        layer.changeAttributeValue(feature.id(), neighbours_field, neighbours_index)
+        i += 1
+    layer.commitChanges()
+
+def calculate_neighbours_spatial_index(layer, buffer_distance=150):
+    # Calculating adjacent neighbour
+    # Create buffer of 150 meter, then calculate the number of same building
+    print('Calculate neighbours index')
+    neighbours_field = layer.fields().indexFromName('neighbours')
+    
+    # Select all features along with their attributes
+    all_features = {feature.id(): feature for (feature) in layer.getFeatures()}
+
+    # Create spatial index
+    spatial_index = QgsSpatialIndex()
+    for f in all_features.values():
+        spatial_index.addFeature(f)
+
+    neighbours_values = []
+    for feature in layer.getFeatures():
+        buffer = feature.geometry().buffer(buffer_distance, 5)
+        # filter layer with the same building type
+    
+        intersect_indexes = spatial_index.intersects(buffer.boundingBox())
+        building_count = len(intersect_indexes)
+
         neighbours_values.append(building_count)
     
     max_neighbours = max(neighbours_values)
@@ -267,18 +303,21 @@ building_layer.updateFields()
 
 start = datetime.now()
 # Updating the component's value.
-#update_height_index(building_layer)
-#update_area_index(building_layer)
-#calculate_facade(building_layer)
+update_height_index(building_layer)
+update_area_index(building_layer)
+calculate_facade(building_layer)
 # calculate_land_use(building_layer, 200, 'lu_eng')
-#calculate_neighbours(building_layer)
-#calculate_landmark_index(building_layer)
-#calculate_landmark_status(building_layer)
+# calculate_neighbours(building_layer)
 end = datetime.now()
 print('Duration: ' + str((end - start)))
 
 start = datetime.now()
 calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
+calculate_neighbours_spatial_index(building_layer)
 end = datetime.now()
 print('Duration: ' + str((end - start)))
+
+calculate_landmark_index(building_layer)
+calculate_landmark_status(building_layer)
+
 print('fin')

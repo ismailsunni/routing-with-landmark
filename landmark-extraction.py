@@ -254,6 +254,7 @@ def calculate_landmark_index(layer):
     land_use_field = layer.fields().indexFromName('land_use')
     neighbours_field = layer.fields().indexFromName('neighbours')
     landmark_index_field = layer.fields().indexFromName('landmark_index')
+    historical_field = layer.fields().indexFromName('historical_importance')
 
     layer.startEditing()
     for feature in layer.getFeatures():
@@ -262,9 +263,21 @@ def calculate_landmark_index(layer):
         facade = feature.attributes()[facade_field]
         land_use = feature.attributes()[land_use_field]
         neighbours_index = feature.attributes()[neighbours_field]
+        historical_index = feature.attributes()[historical_field]
 
-        division = 0.1 + 0.09 + 0.15 + 0.1 + 0.06
-        landmark_index = (height_index * 0.1 + area_index * 0.09 + facade * 0.15 + land_use * 0.1 + neighbours_index * 0.06) / division
+        component_ratios = [
+            (height_index, 0.1),
+            (area_index, 0.09),
+            (facade, 0.15),
+            (land_use, 0.1),
+            (neighbours_index, 0.06),
+            (historical_index, 0.1)
+        ]
+
+        divisor = sum(component_ratio[1] for component_ratio in component_ratios)
+        landmark_index = sum(
+            component_ratio[0] * component_ratio[1] for component_ratio in component_ratios
+        ) / divisor
         layer.changeAttributeValue(feature.id(), landmark_index_field, landmark_index)
     
     layer.commitChanges()
@@ -315,15 +328,15 @@ building_layer.updateFields()
 
 start = datetime.now()
 # Updating the component's value.
-# update_height_index(building_layer)
-# update_area_index(building_layer)
-# calculate_facade(building_layer)
+update_height_index(building_layer)
+update_area_index(building_layer)
+calculate_facade(building_layer)
 end = datetime.now()
 print('Duration: ' + str((end - start)))
 
 start = datetime.now()
-# calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
-# calculate_neighbours_spatial_index(building_layer)
+calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
+calculate_neighbours_spatial_index(building_layer)
 calculate_historical_importance(building_layer, historical_layer)
 end = datetime.now()
 print('Duration: ' + str((end - start)))

@@ -8,7 +8,14 @@ import operator
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from utils import calculate_distance, get_nodes, pretty_node, print_dictionary, print_node
+from utils import (
+    calculate_distance, 
+    get_nodes, 
+    pretty_node, 
+    print_dictionary, 
+    print_node, 
+    nodes_from_path,
+)
 
 # Load node and path/edge
 data_directory_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_data/'
@@ -24,10 +31,16 @@ print('Number of edges in G: %s' % G.number_of_edges())
 
 # Set start and end point
 start = get_nodes(G, 'fid', 736)[0]
-end = get_nodes(G, 'fid', 741)[0]
+end = get_nodes(G, 'fid', 750)[0]
 print("Start node:")
 print_node(G, start)
 print("End node:")
 print_node(G, end)
+
+# A*
+shortest_path = nx.astar_path(G, start, end, heuristic=calculate_distance, weight='length')
+print('Shortest path: ' + ' - '.join(['%d' % fid for fid in nodes_from_path(G, shortest_path, key='fid')]))
+shortest_path_length = nx.astar_path_length(G, start, end, heuristic=calculate_distance, weight='length')
+print('Shortest path length: %f' % shortest_path_length)
 
 print('fin')

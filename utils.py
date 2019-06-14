@@ -8,6 +8,7 @@ def get_nodes(G, key, value):
         if G.node[node].get(key) == value:
             result_nodes.append(node)
     return result_nodes
+
 def pretty_node(node):
     """Helper to convert node to string"""
     return '(%s, %s)' % node
@@ -27,3 +28,11 @@ def calculate_distance(a, b):
     (x1, y1) = a
     (x2, y2) = b
     return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+
+def nodes_from_path(G, path, key=''):
+    """Helper to get list of node from a path with key"""
+    if not key:
+        return path
+    else:
+        keys = [G.node[node][key] for node in path]
+        return keys

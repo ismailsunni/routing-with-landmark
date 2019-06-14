@@ -1,6 +1,9 @@
 """
 Utilities functions for A* algorithm
 """
+
+from osgeo import ogr, osr
+
 def get_nodes(G, key, value):
     """Return list of nodes that has attribute key = value"""
     result_nodes = []
@@ -36,3 +39,21 @@ def nodes_from_path(G, path, key=''):
     else:
         keys = [G.node[node][key] for node in path]
         return keys
+
+def get_spatial_reference(path):
+    """Helper to get spatial reference from a path of layer"""
+    layers = ogr.Open(path)
+    if layers is None:
+        raise RuntimeError("Unable to open {}".format(path))
+    for layer in layers:
+        spatial_reference = layer.GetSpatialRef()
+        if spatial_reference:
+            break
+    return spatial_reference
+
+if __name__ == "__main__":
+    path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_data/'
+    spatial_reference = get_spatial_reference(path)
+    print(spatial_reference)
+    print(spatial_reference.exportToEPSG())
+    print('fin')

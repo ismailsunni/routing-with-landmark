@@ -17,6 +17,7 @@ from utils import (
     print_dictionary, 
     print_node, 
     nodes_from_path,
+    get_spatial_reference
 )
 
 # Setting
@@ -43,9 +44,9 @@ print("End node:")
 print_node(G, end)
 
 # Sample edges
-print('edges')
-e = list(G.edges)[0]
-print(G.edges[e])
+# print('edges')
+# e = list(G.edges)[0]
+# print(G.edges[e])
 
 # A*
 shortest_path = nx.astar_path(G, start, end, heuristic=calculate_distance, weight='length')
@@ -54,11 +55,11 @@ print('Shortest path: ' + ' - '.join(['%d' % fid for fid in fids]))
 shortest_path_length = nx.astar_path_length(G, start, end, heuristic=calculate_distance, weight='length')
 print('Shortest path length: %f' % shortest_path_length)
 
-print('Edges')
-for i in range(len(fids) - 1):
-    node1 = shortest_path[i]
-    node2 = shortest_path[i+1]
-    # print(G.edges[node1, node2])
+# print('Edges')
+# for i in range(len(fids) - 1):
+#     node1 = shortest_path[i]
+#     node2 = shortest_path[i+1]
+#     print(G.edges[node1, node2])
 
 # Create geometry from the edges
 print('Create geometry')
@@ -68,12 +69,11 @@ driver = ogr.GetDriverByName("ESRI Shapefile")
 path_file = '/home/ismailsunni/dev/python/routing/a_star_shortest_path.shp'
 data_source = driver.CreateDataSource(path_file)
 
-# create the spatial reference, 3044 TODO: It should get from the original layer
-srs = osr.SpatialReference()
-srs.ImportFromEPSG(3044)
+# create the spatial reference
+spatial_reference = get_spatial_reference(data_directory_path)
 
 # create the layer
-layer = data_source.CreateLayer("A Star Shortest Path", srs, ogr.wkbLineString)
+layer = data_source.CreateLayer("A Star Shortest Path", spatial_reference, ogr.wkbLineString)
 
 # Create fields
 # fid

@@ -1,5 +1,9 @@
 """
-Script to find shortest find from a road network by using A* algortihm
+Script to find shortest find from a road network by using A* algortihm.
+
+    Author      : Ismail Sunni
+    Email       : imajimatika@gmail.com
+    Date        : Jun 2019
 """
 import os
 from pprint import pprint
@@ -17,49 +21,72 @@ from utils import (
     print_node, 
     nodes_from_path,
     get_spatial_reference,
-    create_path_layer
+    create_path_layer,
+    graph_summary
 )
 
-# Setting
-with_geometry_attribute = True
+def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
+    """Main function for A* shortest path
+        
+        `start_node` and `end_node` are ('key', 'value') format.
+        `input_data_path` is a path to directory with nodes and edges layer.
+        `output_file` is a path to the output shape file.
+    """
+    # Read graph
+    G = nx.Graph(nx.read_shp(input_data_path, strict=False, geom_attrs=True)) # Read and convert to Graph
+    graph_summary(G)
 
-# Load node and path/edge
-# data_directory_path = '/home/ismailsunni/dev/python/routing/test/input/'
-data_directory_path = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data'
-output_file = '/home/ismailsunni/dev/python/routing/result.shp'
+    # Get start and end node
+    start = get_nodes(G, start_node[0], start_node[1])[0]
+    end = get_nodes(G, end_node[0], end_node[1])[0]
+    print("Start node:")
+    print_node(G, start)
+    print("End node:")
+    print_node(G, end)
 
-if not os.path.exists(data_directory_path):
-    print('Path %s is exist...' % data_directory_path)
+    # Find shortest path
+    shortest_path = nx.astar_path(G, start, end, heuristic=calculate_distance, weight='length')
+    fids = nodes_from_path(G, shortest_path, key=start_node[0])
+    print('Shortest path: ' + ' - '.join(['%d' % fid for fid in fids]))
+    shortest_path_length = nx.astar_path_length(G, start, end, heuristic=calculate_distance, weight='length')
+    print('Shortest path length: %f' % shortest_path_length)
 
-G = nx.Graph(nx.read_shp(data_directory_path, strict=False, geom_attrs=with_geometry_attribute)) # Read and convert to Graph
+    # Write result to a shapefile
+    spatial_reference = get_spatial_reference(input_data_path)
+    create_path_layer(G, shortest_path, output_file, spatial_reference)
 
-print('Summary of G:')
-print('Number of nodes in G: %s' % G.number_of_nodes())
-print('Number of edges in G: %s' % G.number_of_edges())
+    if os.path.exists(output_file):
+        return output_file
+    else:
+        return False
 
-# Set start and end point
-# Route A: 4063 to 33
-start = get_nodes(G, 'nodeID', 4063)[0]
-end = get_nodes(G, 'nodeID', 33)[0]
-print("Start node:")
-print_node(G, start)
-print("End node:")
-print_node(G, end)
+if __name__ == "__main__":
+    print('Start')
 
-# Sample edges
-# print('edges')
-# e = list(G.edges)[0]
-# print(G.edges[e])
-
-# A*
-shortest_path = nx.astar_path(G, start, end, heuristic=calculate_distance, weight='length')
-fids = nodes_from_path(G, shortest_path, key='nodeID')
-print('Shortest path: ' + ' - '.join(['%d' % fid for fid in fids]))
-shortest_path_length = nx.astar_path_length(G, start, end, heuristic=calculate_distance, weight='length')
-print('Shortest path length: %f' % shortest_path_length)
-
-spatial_reference = get_spatial_reference(data_directory_path)
-create_path_layer(G, shortest_path, output_file, spatial_reference)
-
-
-print('fin')
+    id_field = 'nodeID'
+    input_data_path = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data'
+    base_output_file =  '/home/ismailsunni/dev/python/routing/test/output/'
+    route_pairs = [
+        {
+            'name': 'A',
+            'start': 4063,
+            'end': 33
+        },
+        {
+            'name': 'B',
+            'start': 6492,
+            'end': 3858
+        },
+        {
+            'name': 'C',
+            'start': 870,
+            'end': 3102
+        },
+    ]
+    for pair in route_pairs:
+        start_node = (id_field, pair['start'])
+        end_node = (id_field, pair['end'])
+        output_file = os.path.join(base_output_file, '%s.shp' % pair['name'])
+        shortest_path_a_star(start_node, end_node, input_data_path, output_file)
+    
+    print('fin')

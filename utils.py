@@ -1,5 +1,9 @@
 """
-Utilities functions for A* algorithm
+Utilities functions for A* algorithm.
+
+    Author      : Ismail Sunni
+    Email       : imajimatika@gmail.com
+    Date        : Jun 2019
 """
 
 from osgeo import ogr, osr
@@ -115,6 +119,12 @@ def create_path_layer(G, path, output_file, spatial_reference):
     data_source = None
 
     return output_file
+
+def graph_summary(graph):
+    """Print the summary of a `graph`"""
+    print('Summary of Graph:')
+    print('Number of nodes in G: %s' % graph.number_of_nodes())
+    print('Number of edges in G: %s' % graph.number_of_edges())
 
 if __name__ == "__main__":
     path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_data/'

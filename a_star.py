@@ -24,7 +24,9 @@ from utils import (
 with_geometry_attribute = True
 
 # Load node and path/edge
-data_directory_path = '/home/ismailsunni/dev/python/routing/test/input/'
+# data_directory_path = '/home/ismailsunni/dev/python/routing/test/input/'
+data_directory_path = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data'
+output_file = '/home/ismailsunni/dev/python/routing/result.shp'
 
 if not os.path.exists(data_directory_path):
     print('Path %s is exist...' % data_directory_path)
@@ -36,8 +38,9 @@ print('Number of nodes in G: %s' % G.number_of_nodes())
 print('Number of edges in G: %s' % G.number_of_edges())
 
 # Set start and end point
-start = get_nodes(G, 'fid', 736)[0]
-end = get_nodes(G, 'fid', 750)[0]
+# Route A: 4063 to 33
+start = get_nodes(G, 'nodeID', 4063)[0]
+end = get_nodes(G, 'nodeID', 33)[0]
 print("Start node:")
 print_node(G, start)
 print("End node:")
@@ -50,14 +53,13 @@ print_node(G, end)
 
 # A*
 shortest_path = nx.astar_path(G, start, end, heuristic=calculate_distance, weight='length')
-fids = nodes_from_path(G, shortest_path, key='fid')
+fids = nodes_from_path(G, shortest_path, key='nodeID')
 print('Shortest path: ' + ' - '.join(['%d' % fid for fid in fids]))
 shortest_path_length = nx.astar_path_length(G, start, end, heuristic=calculate_distance, weight='length')
 print('Shortest path length: %f' % shortest_path_length)
 
-path_file = '/home/ismailsunni/dev/python/routing/test/output/a_star_shortest_path.shp'
 spatial_reference = get_spatial_reference(data_directory_path)
-create_path_layer(G, shortest_path, path_file, spatial_reference)
+create_path_layer(G, shortest_path, output_file, spatial_reference)
 
 
 print('fin')

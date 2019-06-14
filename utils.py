@@ -65,7 +65,7 @@ def create_path_layer(G, path, output_file, spatial_reference):
 
     # Create fields (using default field first, TODO:read from data)
     # fid
-    layer.CreateField(ogr.FieldDefn("fid", ogr.OFTReal))
+    # layer.CreateField(ogr.FieldDefn("fid", ogr.OFTReal))
     # streetID
     layer.CreateField(ogr.FieldDefn("streetID", ogr.OFTInteger64))
     # length
@@ -80,7 +80,14 @@ def create_path_layer(G, path, output_file, spatial_reference):
     # order (added field to get the order)
     layer.CreateField(ogr.FieldDefn("order", ogr.OFTInteger))
 
-    fields = ['fid', 'streetID', 'length', 'u', 'v', 'length_sc']
+    fields = [
+        # 'fid', 
+        'streetID', 
+        'length',
+        'u',
+        'v', 
+        'length_sc'
+        ]
 
     # Iterate over the path edges
     for i in range(len(path) - 1):

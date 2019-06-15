@@ -29,6 +29,8 @@ from qgis.core import (
     QgsSpatialIndex
 )
 
+from qgis_utils import create_spatial_index
+
 QgsApplication.setPrefixPath('/usr', True)
 qgs = QgsApplication([], False)
 qgs.initQgis()
@@ -47,15 +49,6 @@ field_names = [
 ]
 
 DEBUG_MODE = True
- 
-def create_spatial_index(layer):
-    # Select all features along with their attributes
-    all_features = {feature.id(): feature for (feature) in layer.getFeatures()}
-    # Create spatial index
-    spatial_index = QgsSpatialIndex()
-    for f in all_features.values():
-        spatial_index.addFeature(f)
-    return spatial_index
 
 def debug(message):
     if DEBUG_MODE:

@@ -85,18 +85,29 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
     path.append(end)
     for landmark_node in path:
         print(G.node[landmark_node]['nodeID'], G.node[landmark_node]['landmark'])
-    return
+    
+    # Build full path from the path using A*
+    full_path = []
+    i = 0
+    for i in range(len(path) - 1):
+        shortest_landmark_path = nx.astar_path(G, path[i], path[i+1], heuristic=calculate_distance, weight='length')
+        full_path.extend(shortest_landmark_path)
 
-    # Find shortest path
-    shortest_path = nx.astar_path(G, start, end, heuristic=calculate_distance, weight='length')
-    fids = nodes_from_path(G, shortest_path, key=start_node[0])
-    print('Shortest path: ' + ' - '.join(['%d' % fid for fid in fids]))
-    shortest_path_length = nx.astar_path_length(G, start, end, heuristic=calculate_distance, weight='length')
-    print('Shortest path length: %f' % shortest_path_length)
+    # Adding end node
+    full_path.append(end)
+
+    # return
+
+    # # Find shortest path
+    # shortest_path = nx.astar_path(G, start, end, heuristic=calculate_distance, weight='length')
+    # fids = nodes_from_path(G, shortest_path, key=start_node[0])
+    # print('Shortest path: ' + ' - '.join(['%d' % fid for fid in fids]))
+    # shortest_path_length = nx.astar_path_length(G, start, end, heuristic=calculate_distance, weight='length')
+    # print('Shortest path length: %f' % shortest_path_length)
 
     # Write result to a shapefile
     spatial_reference = get_spatial_reference(input_data_path)
-    create_path_layer(G, shortest_path, output_file, spatial_reference)
+    create_path_layer(G, full_path, output_file, spatial_reference)
 
     if os.path.exists(output_file):
         return output_file
@@ -105,6 +116,12 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
 
 if __name__ == "__main__":
     print('Start')
+
+    from qgis.core import QgsApplication, QgsVectorLayer, QgsPointXY
+    
+    QgsApplication.setPrefixPath('/usr', True)
+    qgs = QgsApplication([], False)
+    qgs.initQgis()
 
     id_field = 'nodeID'
     input_data_path = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data'
@@ -129,7 +146,7 @@ if __name__ == "__main__":
     for pair in route_pairs[:1]:
         start_node = (id_field, pair['start'])
         end_node = (id_field, pair['end'])
-        output_file = os.path.join(base_output_file, '%s.shp' % pair['name'])
+        output_file = os.path.join(base_output_file, 'landmark_%s.shp' % pair['name'])
         shortest_path_a_star(start_node, end_node, input_data_path, output_file)
     
     print('fin')

@@ -8,6 +8,7 @@ Script to find shortest find from a road network by using A* algortihm.
 import os
 from pprint import pprint
 import operator
+from copy import deepcopy
 
 from osgeo import ogr, osr
 
@@ -55,7 +56,7 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
 
     # Get transit node
     current_node = start
-    unvisited_landmarks = list(landmark_nodes)
+    unvisited_landmarks = deepcopy(landmark_nodes)
     path = [start]
     finish = False
     while not finish:
@@ -84,17 +85,20 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
     print('Path')
     path.append(end)
     for landmark_node in path:
-        print(G.node[landmark_node]['nodeID'], G.node[landmark_node]['landmark'])
+        print(G.node[landmark_node]['nodeID'], G.node[landmark_node]['landmark'], landmark_node)
     
     # Build full path from the path using A*
     full_path = []
     i = 0
     for i in range(len(path) - 1):
         shortest_landmark_path = nx.astar_path(G, path[i], path[i+1], heuristic=calculate_distance, weight='length')
-        full_path.extend(shortest_landmark_path)
+        full_path.extend(shortest_landmark_path[:-1])
 
     # Adding end node
     full_path.append(end)
+    # print('Full path')
+    # for node in full_path:
+    #     print(G.node[node]['nodeID'], G.node[node]['landmark'], node)
 
     # return
 
@@ -143,7 +147,7 @@ if __name__ == "__main__":
             'end': 3102
         },
     ]
-    for pair in route_pairs[:1]:
+    for pair in route_pairs:
         start_node = (id_field, pair['start'])
         end_node = (id_field, pair['end'])
         output_file = os.path.join(base_output_file, 'landmark_%s.shp' % pair['name'])

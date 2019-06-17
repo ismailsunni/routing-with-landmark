@@ -100,14 +100,34 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
     # for node in full_path:
     #     print(G.node[node]['nodeID'], G.node[node]['landmark'], node)
 
-    # return
+    # Clean path from duplicated node, this algorithm work since the path is continue
+    if len(full_path) != len(set(full_path)):
+        unduplicate_path = []
+        skip = False
+        current_node = None
+        for node in full_path:
+            if not skip:
+                if full_path.count(node) == 1:
+                    # Always add node with single occurence
+                    unduplicate_path.append(node)
+                else:
+                    # Add the first node that has more than one occurence
+                    unduplicate_path.append(node)
+                    # Mark skip as true for the next nodes
+                    skip = True
+                    # Store the first duplicate node
+                    current_node = node
+            else:
+                if node == current_node:
+                    # Found another current_node
+                    # Remove the skip flag
+                    skip = False
+                    current_node = None
+                else:
+                    # Always skip until found another current_node
+                    pass
 
-    # # Find shortest path
-    # shortest_path = nx.astar_path(G, start, end, heuristic=calculate_distance, weight='length')
-    # fids = nodes_from_path(G, shortest_path, key=start_node[0])
-    # print('Shortest path: ' + ' - '.join(['%d' % fid for fid in fids]))
-    # shortest_path_length = nx.astar_path_length(G, start, end, heuristic=calculate_distance, weight='length')
-    # print('Shortest path length: %f' % shortest_path_length)
+        full_path = unduplicate_path
 
     # Write result to a shapefile
     spatial_reference = get_spatial_reference(input_data_path)

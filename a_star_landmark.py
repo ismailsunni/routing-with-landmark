@@ -72,7 +72,7 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
             landmark_end_distance = calculate_distance(landmark_distance[0], end)
             # compare the `current_node to end distance` with the `landmark to end distance`
             # TODO: ????
-            if current_distance_to_end < landmark_end_distance:
+            if current_distance_to_end < landmark_end_distance or calculate_distance(current_node, landmark_distance[0]) > current_distance_to_end:
                 # the current node distance 
                 finish = True
                 continue

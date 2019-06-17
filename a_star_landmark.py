@@ -64,7 +64,7 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
 
         # order distance
         # get distance for all unvisited landmarks from the current node
-        landmark_distance_dict = {node: calculate_distance(start, node) for node in unvisited_landmarks}
+        landmark_distance_dict = {node: calculate_distance(current_node, node) for node in unvisited_landmarks}
         # sort the distance
         sorted_landmark_distance_dict = sorted(landmark_distance_dict.items(), key=operator.itemgetter(1))
         for landmark_distance in sorted_landmark_distance_dict:

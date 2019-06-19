@@ -6,6 +6,7 @@ Utilities functions for A* algorithm.
     Date        : Jun 2019
 """
 
+import json
 from osgeo import ogr, osr
 
 def get_nodes(G, key, value):
@@ -119,6 +120,13 @@ def create_path_layer(G, path, output_file, spatial_reference):
     data_source = None
 
     return output_file
+
+def get_points(G, edge_key):
+    """Return list of points of edge `edge_key` in G"""
+    edge = G.edges[edge_key]
+    json_string_edge = edge['Json']
+    json_edge = json.loads(json_string_edge)
+    return json_edge['coordinates']
 
 def graph_summary(graph):
     """Print the summary of a `graph`"""

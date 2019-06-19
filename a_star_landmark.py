@@ -129,14 +129,17 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
 
         full_path = unduplicate_path
 
-    # Write result to a shapefile
-    spatial_reference = get_spatial_reference(input_data_path)
-    create_path_layer(G, full_path, output_file, spatial_reference)
+    return full_path
 
-    if os.path.exists(output_file):
-        return output_file
-    else:
-        return False
+    # Skip this writing file, move to the wrapper
+    # # Write result to a shapefile
+    # spatial_reference = get_spatial_reference(input_data_path)
+    # create_path_layer(G, full_path, output_file, spatial_reference)
+
+    # if os.path.exists(output_file):
+    #     return output_file
+    # else:
+    #     return False
 
 if __name__ == "__main__":
     print('Start')

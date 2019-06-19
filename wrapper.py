@@ -13,8 +13,8 @@ from qgis.core import QgsApplication, QgsVectorLayer, QgsPointXY, QgsGeometry, Q
 from utils import get_points, get_spatial_reference
 from qgis_utils import get_nearest_feature
 
-from a_star import shortest_path_a_star
-from a_star_landmark import shortest_path_a_star as a_star_landmark
+from a_star import shortest_path_a_star as a_star_algorithm
+from a_star_landmark import shortest_path_a_star as a_star_landmark_algorithm
 
 def algorithm_wrapper(start_point, end_point, node_layer, input_data_path, output_file, algorithm, node_id_attribute='nodeID'):
     """
@@ -95,21 +95,23 @@ if __name__ == "__main__":
     qgs = QgsApplication([], False)
     qgs.initQgis()
 
-    # start_point = QgsPointXY(405812, 5756851)
-    # end_point = QgsPointXY(404984, 5757671)
-    start_point = QgsPointXY(404346.48, 5757913.23)
-    end_point = QgsPointXY(404447.56, 5757876.82)
+    # Point A
+    start_point = QgsPointXY(405812, 5756851)
+    end_point = QgsPointXY(404984, 5757671)
+    # Test
+    # start_point = QgsPointXY(404346.48, 5757913.23)
+    # end_point = QgsPointXY(404447.56, 5757876.82)
 
-    # node_path = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data/nodes_single.shp'
-    node_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_data/smaller_nodes_single.shp'
+    node_path = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data/nodes_single.shp'
+    # node_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_data/smaller_nodes_single.shp'
     node_layer = QgsVectorLayer(node_path, 'nodes', 'ogr')
     if not node_layer.isValid():
         print('Node layer is not valid.')
     
-    # input_data_path = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data'
-    input_data_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_data'
+    input_data_path = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data'
+    # input_data_path = '/home/ismailsunni/Documents/GeoTech/Routing/processed/small_data'
 
     base_output_file =  '/home/ismailsunni/dev/python/routing/test/output/'
-    output_file = os.path.join(base_output_file, 'landmark_wrapper.shp')
+    output_file = os.path.join(base_output_file, 'landmark_wrapper_A.shp')
 
-    algorithm_wrapper(start_point, end_point, node_layer, input_data_path, output_file, shortest_path_a_star)
+    algorithm_wrapper(start_point, end_point, node_layer, input_data_path, output_file, a_star_landmark_algorithm)

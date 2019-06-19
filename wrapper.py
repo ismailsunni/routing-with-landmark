@@ -95,9 +95,29 @@ if __name__ == "__main__":
     qgs = QgsApplication([], False)
     qgs.initQgis()
 
-    # Point A
-    start_point = QgsPointXY(405812, 5756851)
-    end_point = QgsPointXY(404984, 5757671)
+    routes = [
+        [
+            'A',
+            QgsPointXY(405812, 5756851),
+            QgsPointXY(404984, 5757671)
+        ],
+        [
+            'B',
+            QgsPointXY(406423, 5757091),
+            QgsPointXY(405600, 5757755)
+        ],
+        [
+            'C',
+            QgsPointXY(405814, 5758009),
+            QgsPointXY(404769, 5757892)
+        ]
+    ]
+
+    algorithms = [
+        a_star_algorithm,
+        a_star_landmark_algorithm
+    ]
+
     # Test
     # start_point = QgsPointXY(404346.48, 5757913.23)
     # end_point = QgsPointXY(404447.56, 5757876.82)
@@ -114,4 +134,7 @@ if __name__ == "__main__":
     base_output_file =  '/home/ismailsunni/dev/python/routing/test/output/'
     output_file = os.path.join(base_output_file, 'landmark_wrapper_A.shp')
 
-    algorithm_wrapper(start_point, end_point, node_layer, input_data_path, output_file, a_star_landmark_algorithm)
+    for route in routes:
+        for algorithm in algorithms:
+            output_file = os.path.join(base_output_file, algorithm.name + '_' + route[0] + '.shp')
+            algorithm_wrapper(route[1], route[2], node_layer, input_data_path, output_file, algorithm)        

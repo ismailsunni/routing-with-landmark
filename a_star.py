@@ -63,6 +63,8 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
     # else:
     #     return False
 
+shortest_path_a_star.name = 'a_star'
+
 if __name__ == "__main__":
     print('Start')
 

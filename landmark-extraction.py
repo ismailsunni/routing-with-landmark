@@ -312,10 +312,10 @@ def calculate_structural_index(layer):
         ]
         
         divisor = sum(component_ratio[1] for component_ratio in structural_component_ratios)
-        structural_raw_values = sum(
+        structural_raw_value = sum(
             component_ratio[0] * component_ratio[1] for component_ratio in structural_component_ratios
         ) / divisor
-        structural_raw_values.append(structural_raw_values)
+        structural_raw_values.append(structural_raw_value)
     
     # Rescale
     min_structural_raw_value = min(structural_raw_values)
@@ -335,29 +335,23 @@ def calculate_structural_index(layer):
 def calculate_landmark_index(layer):
     # Calculate landmark index
     debug('Calculate landmark index')
-    height_index_field = layer.fields().indexFromName('height_index')
-    area_index_field = layer.fields().indexFromName('area_index')
-    facade_field = layer.fields().indexFromName('facade_area')
-    land_use_field = layer.fields().indexFromName('land_use')
-    neighbours_field = layer.fields().indexFromName('neighbours')
-    landmark_index_field = layer.fields().indexFromName('landmark_index')
+    visual_index_field = layer.fields().indexFromName('visual_index')
+    structural_index_field = layer.fields().indexFromName('structural_index')
     historical_field = layer.fields().indexFromName('historical_importance')
+    land_use_field = layer.fields().indexFromName('land_use')
+    landmark_index_field = layer.fields().indexFromName('landmark_index')
 
     layer.startEditing()
     for feature in layer.getFeatures():
-        height_index = feature.attributes()[height_index_field]
-        area_index = feature.attributes()[area_index_field]
-        facade = feature.attributes()[facade_field]
+        visual_index = feature.attributes()[visual_index_field]
+        structural_index = feature.attributes()[structural_index_field]
         land_use = feature.attributes()[land_use_field]
-        neighbours_index = feature.attributes()[neighbours_field]
         historical_index = feature.attributes()[historical_field]
 
         component_ratios = [
-            (height_index, 0.1),
-            (area_index, 0.09),
-            (facade, 0.15),
+            (visual_index, 0.5),
+            (structural_index, 0.3),
             (land_use, 0.1),
-            (neighbours_index, 0.06),
             (historical_index, 0.1)
         ]
 
@@ -443,6 +437,8 @@ if __name__ == "__main__":
         calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
         calculate_neighbours_spatial_index(building_layer)
         calculate_historical_importance(building_layer, historical_layer)
+        calculate_structural_index(building_layer)
+        calculate_visual_index(building_layer)
     
     # always re-calculate index
     calculate_landmark_index(building_layer)

@@ -385,9 +385,24 @@ def calculate_landmark_status(layer, threshold=0.5):
 
 
 if __name__ == "__main__":
-    # Choosing the layer (used in QGIS)
-    # small_test = QgsProject.instance().mapLayersByName('Small test')[0]
-    # full_test = QgsProject.instance().mapLayersByName('Test')[0]
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--mode", 
+        help="`full` or `update` index", 
+        nargs='?', 
+        type=str,
+        const='update')
+    parser.add_argument(
+        '--threshold', 
+        nargs='?', 
+        const=0.5, 
+        type=float, 
+        help='The threshold for landmark status')
+    args = parser.parse_args()
+    mode = args.mode if args.mode else 'full'
+    threshold = args.threshold if args.threshold else 0.5
+    print('Running [%s] mode with threshold = %.2f' % (mode, threshold))
 
     # Debug mode
     DEBUG_MODE = True
@@ -417,18 +432,21 @@ if __name__ == "__main__":
     # Add the fields to the layer
     building_layer.dataProvider().addAttributes(fields)
     building_layer.updateFields()
-
+    
     start = datetime.now()
 
-    # Updating the component's value.
-    update_height_index(building_layer)
-    update_area_index(building_layer)
-    calculate_facade(building_layer)
-    calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
-    calculate_neighbours_spatial_index(building_layer)
-    calculate_historical_importance(building_layer, historical_layer)
+    if mode == 'full':
+        # Updating the component's value.
+        update_height_index(building_layer)
+        update_area_index(building_layer)
+        calculate_facade(building_layer)
+        calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
+        calculate_neighbours_spatial_index(building_layer)
+        calculate_historical_importance(building_layer, historical_layer)
+    
+    # always re-calculate index
     calculate_landmark_index(building_layer)
-    calculate_landmark_status(building_layer)
+    calculate_landmark_status(building_layer,threshold=threshold)
 
     end = datetime.now()
 

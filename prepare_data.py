@@ -37,13 +37,15 @@ if __name__ == "__main__":
     node_layer.startEditing()
     # Get all polygon that is a landmark
     features = landmark_layer.getFeatures('"landmark_status" = 1')
-    print('Number of landmark: %s' % len(list(features)))
+    i = 0
     for feature in features:
         # Get all nearest node for each landmark
         nearest_node = get_nearest_feature(node_layer, feature.geometry().centroid().asPoint())
         # Set the value of landmark_status to True for the nearest node
         node_layer.changeAttributeValue(nearest_node.id(), landmark_field_index, 1)
         print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+        i = i + 1
+    print('Number of landmark: %s' % i)
     
     node_layer.commitChanges()
     print('fin')

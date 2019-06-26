@@ -18,6 +18,9 @@
 from datetime import datetime
 import os
 import sys
+
+import argparse
+
 import qgis.utils
 
 from qgis.PyQt.QtCore import QVariant
@@ -45,6 +48,8 @@ field_names = [
     'road_distance',
     'historical_importance',
     'land_use',
+    'visual_index',
+    'structural_index',
     'landmark_index',
 ]
 
@@ -242,6 +247,90 @@ def calculate_historical_importance(layer, historic_layer):
             # all_features[intersect_index].setAttribute(historical_field, 1.0)
             layer.changeAttributeValue(feature.id(), historical_field, 1.0)
     layer.commitChanges()
+
+def calculate_visual_index(layer):
+    # Calculate visual index. Result should be between 0-1
+    # Visual 
+    #     3D Visibility 0.5 * 0.5 = 0.25
+    #     Facade area  0.3 * 0.5 = 0.15
+    #     Height 0.2 * 0.5 = 0.1
+    debug('Calculate visual index')
+    facade_field = layer.fields().indexFromName('facade_area')
+    height_index_field = layer.fields().indexFromName('height_index')
+    visual_index_field = layer.fields().indexFromName('visual_index')
+
+    visual_raw_values = []
+    for feature in layer.getFeatures():
+        facade = feature.attributes()[facade_field]
+        height_index = feature.attributes()[height_index_field]
+
+        visual_component_ratios = [
+            (height_index, 0.2),
+            (facade, 0.3),
+        ]
+        
+        divisor = sum(component_ratio[1] for component_ratio in visual_component_ratios)
+        visual_raw_value = sum(
+            component_ratio[0] * component_ratio[1] for component_ratio in visual_component_ratios
+        ) / divisor
+        visual_raw_values.append(visual_raw_value)
+    
+    # Rescale
+    min_visual_raw_value = min(visual_raw_values)
+    max_visual_raw_value = max(visual_raw_values)
+    range_visual_raw_value = max_visual_raw_value - min_visual_raw_value
+    
+    # Update value
+    layer.startEditing()
+    i = 0
+    for feature in layer.getFeatures():
+        visual_index = (visual_raw_values[i] - min_visual_raw_value) / range_visual_raw_value
+        layer.changeAttributeValue(feature.id(), visual_index_field, visual_index)
+        i += 1
+    layer.commitChanges()
+
+def calculate_structural_index(layer):
+    # Calculate structural index. Result should be between 0-1
+    # Structural
+    #     Area 0.3 * 0.3 = 0.09
+    #     2D-Advance visibility 0.3 * 0.3 = 0.09
+    #     Neighbours 0.2 * 0.3 = 0.06
+    #     Road distance 0.2 * 0.3 = 0.06
+    debug('Calculate structural index')
+    area_index_field = layer.fields().indexFromName('area_index')
+    neighbours_field = layer.fields().indexFromName('neighbours')
+    structural_index_field = layer.fields().indexFromName('structural_index')
+
+    structural_raw_values = []
+    for feature in layer.getFeatures():
+        area_index = feature.attributes()[area_index_field]
+        neighbours = feature.attributes()[neighbours_field]
+
+        structural_component_ratios = [
+            (area_index, 0.3),
+            (neighbours, 0.2),
+        ]
+        
+        divisor = sum(component_ratio[1] for component_ratio in structural_component_ratios)
+        structural_raw_values = sum(
+            component_ratio[0] * component_ratio[1] for component_ratio in structural_component_ratios
+        ) / divisor
+        structural_raw_values.append(structural_raw_values)
+    
+    # Rescale
+    min_structural_raw_value = min(structural_raw_values)
+    max_structural_raw_value = max(structural_raw_values)
+    range_structural_raw_value = max_structural_raw_value - min_structural_raw_value
+    
+    # Update value
+    layer.startEditing()
+    i = 0
+    for feature in layer.getFeatures():
+        structural_index = (structural_raw_values[i] - min_structural_raw_value) / range_structural_raw_value
+        layer.changeAttributeValue(feature.id(), structural_index_field, structural_index)
+        i += 1
+    layer.commitChanges()
+
 
 def calculate_landmark_index(layer):
     # Calculate landmark index

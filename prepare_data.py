@@ -37,7 +37,7 @@ if __name__ == "__main__":
     node_layer.startEditing()
     # Get all polygon that is a landmark
     features = landmark_layer.getFeatures('"landmark_status" = 1')
-    # print('Number of landmark: %s' % features.count())
+    print('Number of landmark: %s' % len(list(features)))
     for feature in features:
         # Get all nearest node for each landmark
         nearest_node = get_nearest_feature(node_layer, feature.geometry().centroid().asPoint())

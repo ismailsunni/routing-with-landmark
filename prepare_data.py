@@ -3,7 +3,7 @@ if __name__ == "__main__":
     from qgis.PyQt.QtCore import QVariant
     from qgis.core import QgsApplication, QgsVectorLayer, QgsPointXY, QgsField
 
-    from qgis_utils import get_nearest_feature
+    from qgis_utils import get_nearest_feature, get_nearest_features, get_nearest_feature_buffer
     
     QgsApplication.setPrefixPath('/usr', True)
     qgs = QgsApplication([], False)
@@ -38,14 +38,44 @@ if __name__ == "__main__":
     # Get all polygon that is a landmark
     features = landmark_layer.getFeatures('"landmark_status" = 1')
     i = 0
+    j = 0
+    one_landmark_one_node = False
+    buffer_mode = True
+    buffer_distance = 10
     for feature in features:
-        # Get all nearest node for each landmark
-        nearest_node = get_nearest_feature(node_layer, feature.geometry().centroid().asPoint())
-        # Set the value of landmark_status to True for the nearest node
-        node_layer.changeAttributeValue(nearest_node.id(), landmark_field_index, 1)
-        print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+        if not buffer_mode:
+            if one_landmark_one_node:
+                # Get all nearest node for each landmark
+                nearest_node = get_nearest_feature(node_layer, feature.geometry().centroid().asPoint())
+                # Set the value of landmark_status to True for the nearest node
+                node_layer.changeAttributeValue(nearest_node.id(), landmark_field_index, 1)
+                print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+                j += 1
+            else:
+                # Get all nearest node for each landmark
+                nearest_nodes = get_nearest_features(node_layer, feature.geometry().centroid().asPoint(), 10, 50)
+                if not nearest_nodes:
+                    print('=================================')
+                for nearest_node in nearest_nodes:
+                    # Set the value of landmark_status to True for the nearest node
+                    node_layer.changeAttributeValue(nearest_node.id(), landmark_field_index, 1)
+                    print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+                    j += 1
+        else:
+            # Using buffer
+            nearest_nodes = get_nearest_feature_buffer(node_layer, feature, buffer_distance)
+            if not nearest_nodes:
+                print('>>>>> No nearest nodes from buffer')
+            for nearest_node in nearest_nodes:
+                # Set the value of landmark_status to True for the nearest node
+                node_layer.changeAttributeValue(nearest_node.id(), landmark_field_index, 1)
+                print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+                j += 1
         i = i + 1
+
+            
     print('Number of landmark: %s' % i)
+    print('Number of landmark-node: %s' % j)
     
     node_layer.commitChanges()
     print('fin')

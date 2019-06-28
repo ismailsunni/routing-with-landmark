@@ -341,7 +341,8 @@ def calculate_landmark_index(layer):
     land_use_field = layer.fields().indexFromName('land_use')
     landmark_index_field = layer.fields().indexFromName('landmark_index')
 
-    layer.startEditing()
+    
+    landmark_raw_values = []
     for feature in layer.getFeatures():
         visual_index = feature.attributes()[visual_index_field]
         structural_index = feature.attributes()[structural_index_field]
@@ -356,11 +357,24 @@ def calculate_landmark_index(layer):
         ]
 
         divisor = sum(component_ratio[1] for component_ratio in component_ratios)
-        landmark_index = sum(
+        landmark_raw_value = sum(
             component_ratio[0] * component_ratio[1] for component_ratio in component_ratios
         ) / divisor
-        layer.changeAttributeValue(feature.id(), landmark_index_field, landmark_index)
+        landmark_raw_values.append(landmark_raw_value)
+        # layer.changeAttributeValue(feature.id(), landmark_index_field, landmark_index)
+
+    # Rescale
+    min_landmark_raw_value = min(landmark_raw_values)
+    max_landmark_raw_value = max(landmark_raw_values)
+    range_landmark_raw_value = max_landmark_raw_value - min_landmark_raw_value
     
+    # Update value
+    layer.startEditing()
+    i = 0
+    for feature in layer.getFeatures():
+        landmark_index = (landmark_raw_values[i] - min_landmark_raw_value) / range_landmark_raw_value
+        layer.changeAttributeValue(feature.id(), landmark_index_field, landmark_index)
+        i += 1
     layer.commitChanges()
 
 def calculate_landmark_status(layer, threshold=0.5):

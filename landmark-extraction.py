@@ -29,7 +29,8 @@ from qgis.core import (
     QgsVectorLayer,
     QgsProject,
     QgsField,
-    QgsSpatialIndex
+    QgsSpatialIndex,
+    QgsGeometry,
 )
 
 from qgis_utils import create_spatial_index
@@ -248,6 +249,35 @@ def calculate_historical_importance(layer, historic_layer):
             layer.changeAttributeValue(feature.id(), historical_field, 1.0)
     layer.commitChanges()
 
+def calculate_shortest_road_distance(layer, road_layer):
+    """Calculating the shortest distance to the nearest road"""
+    debug('Calculate shortest road distance')
+    road_distance_field = layer.fields().indexFromName('road_distance')
+    all_roads = {feature.id(): feature for (feature) in road_layer.getFeatures()}
+    # Create spatial index
+    road_spatial_index = create_spatial_index(road_layer)
+
+    nearest_distances = []
+    for building in layer.getFeatures():
+        nearest_road_id = road_spatial_index.nearestNeighbor(building.geometry())[0]
+        road = all_roads[nearest_road_id]
+        distance = QgsGeometry.distance(building.geometry(), road.geometry())
+        nearest_distances.append(distance)
+
+    # Rescale
+    min_nearest_distances = min(nearest_distances)
+    max_nearest_distances = max(nearest_distances)
+    range_nearest_distances = max_nearest_distances - min_nearest_distances
+
+    # Update value
+    layer.startEditing()
+    i = 0
+    for feature in layer.getFeatures():
+        nearest_distance_index = (nearest_distances[i] - min_nearest_distances) / range_nearest_distances
+        layer.changeAttributeValue(feature.id(), road_distance_field, nearest_distance_index)
+        i += 1
+    layer.commitChanges()
+
 def calculate_visual_index(layer):
     # Calculate visual index. Result should be between 0-1
     # Visual 
@@ -299,16 +329,19 @@ def calculate_structural_index(layer):
     debug('Calculate structural index')
     area_index_field = layer.fields().indexFromName('area_index')
     neighbours_field = layer.fields().indexFromName('neighbours')
+    road_distance_field = layer.fields().indexFromName('road_distance')
     structural_index_field = layer.fields().indexFromName('structural_index')
 
     structural_raw_values = []
     for feature in layer.getFeatures():
         area_index = feature.attributes()[area_index_field]
         neighbours = feature.attributes()[neighbours_field]
+        road_distance = feature.attributes()[road_distance_field]
 
         structural_component_ratios = [
             (area_index, 0.3),
             (neighbours, 0.2),
+            (road_distance, 0.2)
         ]
         
         divisor = sum(component_ratio[1] for component_ratio in structural_component_ratios)
@@ -361,7 +394,6 @@ def calculate_landmark_index(layer):
             component_ratio[0] * component_ratio[1] for component_ratio in component_ratios
         ) / divisor
         landmark_raw_values.append(landmark_raw_value)
-        # layer.changeAttributeValue(feature.id(), landmark_index_field, landmark_index)
 
     # Rescale
     min_landmark_raw_value = min(landmark_raw_values)
@@ -428,6 +460,11 @@ if __name__ == "__main__":
     if not historical_layer.isValid():
         print('Historical layer invalid')
 
+    road_path = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data/edges.shp'
+    road_layer = QgsVectorLayer(road_path, 'road', 'ogr')
+    if not road_layer.isValid():
+        print('Road layer invalid')
+
     # Create intermediate fields for storing the values
     fields = [
         QgsField(field_name, QVariant.Double) for field_name in field_names if building_layer.fields().indexFromName(field_name) == -1
@@ -451,6 +488,9 @@ if __name__ == "__main__":
         calculate_land_use_spatial_index(building_layer, 200, 'lu_eng')
         calculate_neighbours_spatial_index(building_layer)
         calculate_historical_importance(building_layer, historical_layer)
+        calculate_shortest_road_distance(building_layer, road_layer)
+        
+        # Update index per component
         calculate_structural_index(building_layer)
         calculate_visual_index(building_layer)
     

@@ -48,8 +48,8 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
 
     # Get landmark node
     landmark_nodes = get_nodes(G, 'landmark', 1)
-    for landmark_node in landmark_nodes:
-        print(G.node[landmark_node]['nodeID'], G.node[landmark_node]['landmark'])
+    # for landmark_node in landmark_nodes:
+    #     print(G.node[landmark_node]['nodeID'], G.node[landmark_node]['landmark'])
 
     # Remove landmark that has bigger distance than the starting point to end
     #TODO: ????
@@ -64,7 +64,8 @@ def shortest_path_a_star(start_node, end_node, input_data_path, output_file):
 
         # order distance
         # get distance for all unvisited landmarks from the current node
-        landmark_distance_dict = {node: calculate_distance(current_node, node) for node in unvisited_landmarks}
+        # landmark_distance_dict = {node: calculate_distance(current_node, node) for node in unvisited_landmarks}
+        landmark_distance_dict = {node: calculate_distance(current_node, node) + calculate_distance(node, end) for node in unvisited_landmarks}
         # sort the distance
         sorted_landmark_distance_dict = sorted(landmark_distance_dict.items(), key=operator.itemgetter(1))
         # No more landmarks, it means finish

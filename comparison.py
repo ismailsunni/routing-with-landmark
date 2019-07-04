@@ -57,6 +57,19 @@ def read_csv(file_path, column_name):
 
     return values
 
+def generate_data_from_cvs(csv_file_paths):
+    """Generate data from list of csv_file_paths. csv_file_paths contains path to CSV file, column_name, and its label
+    `csv_file_paths`: A list of CSV file path, column_name, and label
+    """
+    data = []
+    for item in csv_file_paths:
+        values = read_csv(item[0], item[1])
+        data.append([
+            item[2],
+            values
+        ])
+    return data
+
 def generate_means_stds_labels(data):
     """
     Generate dictionary of means, stds, and labels from data.
@@ -119,6 +132,19 @@ def bar_chart_from_data(data, title, y_label, file_name=''):
 
 if __name__ == "__main__":
     file_path = '/home/ismailsunni/dev/python/routing/test/input/csv_files/a_star_landmark_route_1.csv'
-    values = read_csv(file_path, 'SUM_Shape_Area')
-    print(values)
-    # bar_chart_from_data(data, title='Title', y_label='Y label')
+    csv_file_paths = [
+        [
+            file_path, 
+            'SUM_Shape_Area',
+            'A* with landmark (sample)'
+        ],
+        [
+            file_path, 
+            'SUM_Shape_Area',
+            'Angle change with landmark (sample)'
+        ]   
+    ]
+
+    data = generate_data_from_cvs(csv_file_paths)
+
+    bar_chart_from_data(data, title='Area Between Route', y_label='Area')

@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import csv
 
 # Sample data
 hausdorf_values_1 = np.array([
@@ -42,6 +43,19 @@ data = [
         hausdorf_values_2
     ]
 ]
+
+def read_csv(file_path, column_name):
+    """Read CSV file, and extract values in column name as a array.
+    """
+    values = []
+    with open(file_path, mode='r') as csv_file:
+        csv_reader = csv.DictReader(csv_file, delimiter=';')
+        for row in csv_reader:
+            string_value = row[column_name] 
+            string_value = string_value.replace(',', '.')
+            values.append(float(string_value))
+
+    return values
 
 def generate_means_stds_labels(data):
     """
@@ -104,4 +118,7 @@ def bar_chart_from_data(data, title, y_label, file_name=''):
     bar_chart_with_std(summary['means'], summary['stds'], summary['labels'], title, y_label, file_name)
 
 if __name__ == "__main__":
-    bar_chart_from_data(data, title='Title', y_label='Y label')
+    file_path = '/home/ismailsunni/dev/python/routing/test/input/csv_files/a_star_landmark_route_1.csv'
+    values = read_csv(file_path, 'SUM_Shape_Area')
+    print(values)
+    # bar_chart_from_data(data, title='Title', y_label='Y label')

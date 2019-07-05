@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
+import os
 
 # Sample data
 hausdorf_values_1 = np.array([
@@ -102,20 +103,22 @@ def bar_chart_with_std(means, stds, labels, title, y_label, file_name=''):
     x_pos = np.arange(len(labels))
     # Build the plot
     _, ax = plt.subplots()
+    ax.yaxis.grid(True, zorder=0)
     ax.bar(
         x_pos,
         means,
         yerr=stds,
         align='center',
-        alpha=0.5,
         ecolor='black',
-        capsize=10)
+        capsize=10,
+        color=['red', 'green', 'blue', 'orange'],
+        zorder=3
+        )
     ax.set_ylabel(y_label)
-    # ax.set_xlabel('Hausdorf')
     ax.set_xticks(x_pos)
     ax.set_xticklabels(labels)
     ax.set_title(title)
-    ax.yaxis.grid(True)
+    
 
     # Save the figure and show
     plt.tight_layout()
@@ -132,19 +135,32 @@ def bar_chart_from_data(data, title, y_label, file_name=''):
 
 if __name__ == "__main__":
     file_path = '/home/ismailsunni/dev/python/routing/test/input/csv_files/a_star_landmark_route_1.csv'
-    csv_file_paths = [
+    csv_directory = '/home/ismailsunni/Documents/GeoTech/Routing/Area comparison csv/'
+    esri_column_name = 'SUM_Shape_Area'
+    # Update the list below with your path, column name, and label
+    csv_file_paths_1 = [
         [
-            file_path, 
-            'SUM_Shape_Area',
-            'A* with landmark (sample)'
+            os.path.join(csv_directory, 'Angular_change_area1.csv'), 
+            esri_column_name,
+            'Angular change'
         ],
         [
-            file_path, 
-            'SUM_Shape_Area',
-            'Angle change with landmark (sample)'
-        ]   
+            os.path.join(csv_directory, 'Angular_change_landmark_area1.csv'), 
+            esri_column_name,
+            'Angular change with landmark'
+        ],
+        [
+            os.path.join(csv_directory, 'Atsar_area1.csv'), 
+            esri_column_name,
+            'A*'
+        ],
+        [
+            os.path.join(csv_directory, 'Astar_landmark_area_1.csv'), 
+            esri_column_name,
+            'A* with landmark'
+        ],   
     ]
 
-    data = generate_data_from_cvs(csv_file_paths)
+    data = generate_data_from_cvs(csv_file_paths_1)
 
     bar_chart_from_data(data, title='Area Between Route', y_label='Area')

@@ -138,3 +138,36 @@ if __name__ == "__main__":
         for algorithm in algorithms:
             output_file = os.path.join(base_output_file, algorithm.name + '_' + route[0] + '.shp')
             algorithm_wrapper(route[1], route[2], node_layer, input_data_path, output_file, algorithm)        
+
+computed_routes = [
+    1,
+    2,
+    3,
+    4   
+]
+
+observed_routes = [
+    1,
+    2,
+    3
+]
+
+def the_function(computed_route, observed_route, file_path){
+    pass
+}
+
+def create_csv_path(computed_route, observed_route, parent_directory):
+    # get the file commpute route without ext
+    # get the file observed route without ext
+
+i = 0;
+for computed_route in computed_routes:
+    for observed_route in observed_routes:
+        the_file_name = 'comp' + 'obs' + '.csv'
+        file_path = os.path.join('parent directory', the_file_name)
+        the_function(computed_route, observed_route, file_path)
+
+
+
+
+

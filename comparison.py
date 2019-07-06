@@ -113,11 +113,12 @@ def bar_chart_with_std(means, stds, labels, title, y_label, file_name=''):
         means,
         yerr=stds,
         align='center',
-        ecolor='black',
         capsize=10,
         color=['red', 'green', 'blue', 'orange'],
-        zorder=1
+        zorder=2
         )
+    # Make sure the error bar is visible
+    ax.errorbar(x_pos, means, yerr=stds, zorder=3, color='black', fmt='none')
     ax.set_ylabel(y_label)
     ax.set_xticks(x_pos)
     ax.set_xticklabels(labels)
@@ -157,15 +158,15 @@ if __name__ == "__main__":
         [
             os.path.join(csv_directory, area_csv_sub_dir, 'Angular_change_landmark_areaXXX.csv'), 
             esri_column_name,
-            'Angular change with landmark'
+            'Angular change \n with landmark'
         ],
         [
-            os.path.join(csv_directory, area_csv_sub_dir, 'Atsar_areaXXX.csv'), 
+            os.path.join(csv_directory, area_csv_sub_dir, 'Astar_area_XXX.csv'), 
             esri_column_name,
             'A*'
         ],
         [
-            os.path.join(csv_directory, area_csv_sub_dir, 'Astar_landmark_area_XXX.csv'), 
+            os.path.join(csv_directory, area_csv_sub_dir, 'Astar_landmark_areaXXX.csv'), 
             esri_column_name,
             'A* with landmark'
         ],   
@@ -193,7 +194,7 @@ if __name__ == "__main__":
         [
             os.path.join(csv_directory, distance_csv_sub_dir, 'Angular_change_landmark_XXX.csv'), 
             haus_column_name,
-            'Angular change with landmark'
+            'Angular change \n with landmark'
         ],
         [
             os.path.join(csv_directory, distance_csv_sub_dir, 'a_star_XXX.csv'), 

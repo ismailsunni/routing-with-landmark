@@ -9,7 +9,9 @@ if __name__ == "__main__":
     qgs = QgsApplication([], False)
     qgs.initQgis()
 
-    landmark_file = '/home/ismailsunni/Documents/GeoTech/Routing/processed/Building_casestudy_area_3.gpkg|layername=Buildning_caseStudy_area_3'
+    extracted_landmark = '/home/ismailsunni/Documents/GeoTech/Routing/processed/Building_casestudy_area_3.gpkg|layername=Buildning_caseStudy_area_3'
+    observed_landmark = '/home/ismailsunni/Documents/GeoTech/Routing/landmark_survey/Landmarks.shp'
+    landmark_file = observed_landmark
     node_file = '/home/ismailsunni/Documents/GeoTech/Routing/topic_data/nodes_single.shp'
 
     # Open layer
@@ -36,12 +38,15 @@ if __name__ == "__main__":
 
     node_layer.startEditing()
     # Get all polygon that is a landmark
-    features = landmark_layer.getFeatures('"landmark_status" = 1')
+    if landmark_file == extracted_landmark:
+        features = landmark_layer.getFeatures('"landmark_status" = 1')
+    else:
+        features = landmark_layer.getFeatures()
     i = 0
     j = 0
     one_landmark_one_node = False
     buffer_mode = True
-    buffer_distance = 10
+    buffer_distance = 30
     for feature in features:
         if not buffer_mode:
             if one_landmark_one_node:
@@ -49,7 +54,10 @@ if __name__ == "__main__":
                 nearest_node = get_nearest_feature(node_layer, feature.geometry().centroid().asPoint())
                 # Set the value of landmark_status to True for the nearest node
                 node_layer.changeAttributeValue(nearest_node.id(), landmark_field_index, 1)
-                print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+                if landmark_file == extracted_landmark:
+                    print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+                else:
+                    print('%s get %s' % (feature['name'], nearest_node['nodeID']))
                 j += 1
             else:
                 # Get all nearest node for each landmark
@@ -59,7 +67,10 @@ if __name__ == "__main__":
                 for nearest_node in nearest_nodes:
                     # Set the value of landmark_status to True for the nearest node
                     node_layer.changeAttributeValue(nearest_node.id(), landmark_field_index, 1)
-                    print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+                    if landmark_file == extracted_landmark:
+                        print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+                    else:
+                        print('%s get %s' % (feature['name'], nearest_node['nodeID']))
                     j += 1
         else:
             # Using buffer
@@ -69,7 +80,10 @@ if __name__ == "__main__":
             for nearest_node in nearest_nodes:
                 # Set the value of landmark_status to True for the nearest node
                 node_layer.changeAttributeValue(nearest_node.id(), landmark_field_index, 1)
-                print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+                if landmark_file == extracted_landmark:
+                    print('%s get %s' % (feature['lu_eng'], nearest_node['nodeID']))
+                else:
+                    print('%s get %s' % (feature['name'], nearest_node['nodeID']))
                 j += 1
         i = i + 1
 

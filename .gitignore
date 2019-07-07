@@ -105,3 +105,6 @@ venv.bak/
 
 # output directory
 test/output/*
+
+# vscode
+.vscode/

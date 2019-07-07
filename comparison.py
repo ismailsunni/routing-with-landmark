@@ -136,11 +136,10 @@ def bar_chart_with_std(means, stds, labels, title, y_label, file_name=''):
     ax.errorbar(x_pos, means, yerr=stds, zorder=3, color='black', fmt='none')
     ax.set_ylabel(y_label)
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(labels)
+    ax.set_xticklabels(labels, fontsize='small')
     ax.set_title(title)
 
-
-    # Save the figure and show
+    # Save the figure or show
     plt.tight_layout()
     if file_name:
         plt.savefig(file_name)
@@ -158,37 +157,49 @@ if __name__ == "__main__":
     csv_directory = '/home/ismailsunni/Documents/GeoTech/Routing/csv_comparison/'
     area_csv_sub_dir = 'Area comparison csv'
     distance_csv_sub_dir = 'distance comparison csv'
-    # date_directory = 'July5'
-    date_directory = 'July6'
+    date_directory = 'July5'
+    # date_directory = 'July6'
 
     output_directory = '/home/ismailsunni/dev/python/routing/test/output/'
     barchart_output_directory = os.path.join(output_directory, 'barchart', date_directory)
     merge_csv_directory = os.path.join(output_directory, 'merged_csv')
 
+    # Column name in the CSV files.
     esri_column_name = 'SUM_Shape_Area'
     haus_column_name = 'haus1'
+
+    # Route names
+    route_1_name = 'Route 1 (Gas Station Denim - Amtsgericht)'
+    route_2_name = 'Route 2 (Bremer Platz - Domplatz)'
+    route_3_name = 'Route 3 (Theatre - Castle)'
+
+    # Algorithm labels
+    angular_change_djikstra = 'Angular Change'
+    angular_change_djikstra_landmark = 'Angular Change\nwith Landmark'
+    shortest_distance_a_star = 'Shortest Distance\n(A*)'
+    shortest_distance_a_star_landmark = 'Shortest Distance\n(A*) with Landmark'
 
     ### Template for area ###
     area_csv_file_paths_template = [
         [
             os.path.join(csv_directory, area_csv_sub_dir, date_directory, 'Angular_change_areaXXX.csv'),
             esri_column_name,
-            'Angular change'
+            angular_change_djikstra
         ],
         [
             os.path.join(csv_directory, area_csv_sub_dir, date_directory, 'Angular_change_landmark_areaXXX.csv'),
             esri_column_name,
-            'Angular change \n with landmark'
+            angular_change_djikstra_landmark
         ],
         [
             os.path.join(csv_directory, area_csv_sub_dir, date_directory, 'Astar_area_XXX.csv'),
             esri_column_name,
-            'A*'
+            shortest_distance_a_star
         ],
         [
             os.path.join(csv_directory, area_csv_sub_dir, date_directory, 'Astar_landmark_areaXXX.csv'),
             esri_column_name,
-            'A* with landmark'
+            shortest_distance_a_star_landmark
         ],
     ]
 
@@ -209,22 +220,22 @@ if __name__ == "__main__":
         [
             os.path.join(csv_directory, distance_csv_sub_dir, date_directory, 'Angular_change_XXX.csv'),
             haus_column_name,
-            'Angular change'
+            angular_change_djikstra
         ],
         [
             os.path.join(csv_directory, distance_csv_sub_dir, date_directory, 'Angular_change_landmark_XXX.csv'),
             haus_column_name,
-            'Angular change \n with landmark'
+            angular_change_djikstra_landmark
         ],
         [
             os.path.join(csv_directory, distance_csv_sub_dir, date_directory, 'a_star_XXX.csv'),
             haus_column_name,
-            'A*'
+            shortest_distance_a_star
         ],
         [
             os.path.join(csv_directory, distance_csv_sub_dir, date_directory, 'a_star_landmark_XXX.csv'),
             haus_column_name,
-            'A* with landmark'
+            shortest_distance_a_star_landmark
         ],
     ]
 
@@ -240,48 +251,44 @@ if __name__ == "__main__":
     for csv_file_path in distance_csv_file_paths_3:
         csv_file_path[0] = csv_file_path[0].replace('XXX', 'C')
 
-    route_1_name = 'Route 1 (Gas Station Denim - Amtsgericht)'
-    route_2_name = 'Route 2 (Bremer Platz - Domplatz)'
-    route_3_name = 'Route 3 (Theatre - Castle)'
-
     routes_data = [
         {
-            'name': 'Route 1',
+            'name': route_1_name,
             'data': generate_data_from_cvs(area_csv_file_paths_1),
             'output': 'area_route_1.png',
             'title': 'Area Between',
             'y_label': 'Area'
         },
         {
-            'name': 'Route 2',
+            'name': route_2_name,
             'data': generate_data_from_cvs(area_csv_file_paths_2),
             'output': 'area_route_2.png',
             'title': 'Area Between',
             'y_label': 'Area'
         },
         {
-            'name': 'Route 3',
+            'name': route_3_name,
             'data': generate_data_from_cvs(area_csv_file_paths_3),
             'output': 'area_route_3.png',
             'title': 'Area Between',
             'y_label': 'Area',
         },
                 {
-            'name': 'Route 1',
+            'name': route_1_name,
             'data': generate_data_from_cvs(distance_csv_file_paths_1),
             'output': 'distance_route_1.png',
             'title': 'Hausdorff Distance',
             'y_label': 'Distance'
         },
         {
-            'name': 'Route 2',
+            'name': route_2_name,
             'data': generate_data_from_cvs(distance_csv_file_paths_2),
             'output': 'distance_route_2.png',
             'title': 'Hausdorff Distance',
             'y_label': 'Distance'
         },
         {
-            'name': 'Route 3',
+            'name': route_3_name,
             'data': generate_data_from_cvs(distance_csv_file_paths_3),
             'output': 'distance_route_3.png',
             'title': 'Hausdorff Distance',
@@ -296,7 +303,6 @@ if __name__ == "__main__":
         area_csv_file_paths_1[0][0],
         area_csv_file_paths_2[0][0],
         area_csv_file_paths_3[0][0],
-
     ]
     merge_csv(csv_files, esri_column_name, area_angular_change_summary_csv)
 
@@ -306,7 +312,6 @@ if __name__ == "__main__":
         area_csv_file_paths_1[1][0],
         area_csv_file_paths_2[1][0],
         area_csv_file_paths_3[1][0],
-
     ]
     merge_csv(csv_files, esri_column_name, area_angular_change_landmark_summary_csv)
 
@@ -316,7 +321,6 @@ if __name__ == "__main__":
         area_csv_file_paths_1[2][0],
         area_csv_file_paths_2[2][0],
         area_csv_file_paths_3[2][0],
-
     ]
     merge_csv(csv_files, esri_column_name, area_a_star_summary_csv)
 
@@ -326,7 +330,6 @@ if __name__ == "__main__":
         area_csv_file_paths_1[3][0],
         area_csv_file_paths_2[3][0],
         area_csv_file_paths_3[3][0],
-
     ]
     merge_csv(csv_files, esri_column_name, area_a_star_landmark_summary_csv)
 
@@ -334,22 +337,22 @@ if __name__ == "__main__":
         [
             area_angular_change_summary_csv,
             esri_column_name,
-            'Angular change'
+            angular_change_djikstra
         ],
         [
             area_angular_change_landmark_summary_csv,
             esri_column_name,
-            'Angular change \n with landmark'
+            angular_change_djikstra_landmark
         ],
         [
             area_a_star_summary_csv,
             esri_column_name,
-            'A*'
+            shortest_distance_a_star
         ],
         [
             area_a_star_landmark_summary_csv,
             esri_column_name,
-            'A* with landmark'
+            shortest_distance_a_star_landmark
         ],
     ]
 
@@ -394,22 +397,22 @@ if __name__ == "__main__":
         [
             area_angular_change_summary_csv,
             esri_column_name,
-            'Angular change'
+            angular_change_djikstra
         ],
         [
             area_angular_change_landmark_summary_csv,
             esri_column_name,
-            'Angular change \n with landmark'
+            angular_change_djikstra_landmark
         ],
         [
             area_a_star_summary_csv,
             esri_column_name,
-            'A*'
+            shortest_distance_a_star
         ],
         [
             area_a_star_landmark_summary_csv,
             esri_column_name,
-            'A* with landmark'
+            shortest_distance_a_star_landmark
         ],
     ]
 
@@ -417,22 +420,22 @@ if __name__ == "__main__":
         [
             distance_angular_change_summary_csv,
             haus_column_name,
-            'Angular change'
+            angular_change_djikstra
         ],
         [
             distance_angular_change_landmark_summary_csv,
             haus_column_name,
-            'Angular change \n with landmark'
+            angular_change_djikstra_landmark
         ],
         [
             distance_a_star_summary_csv,
             haus_column_name,
-            'A*'
+            shortest_distance_a_star
         ],
         [
             distance_a_star_landmark_summary_csv,
             haus_column_name,
-            'A* with landmark'
+            shortest_distance_a_star_landmark
         ],
     ]
 

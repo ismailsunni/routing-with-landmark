@@ -135,6 +135,7 @@ def bar_chart_with_std(means, stds, labels, title, y_label, file_name=''):
     # Make sure the error bar is visible
     ax.errorbar(x_pos, means, yerr=stds, zorder=3, color='black', fmt='none')
     ax.set_ylabel(y_label)
+    ax.set_xlabel('Algorithm')
     ax.set_xticks(x_pos)
     ax.set_xticklabels(labels, fontsize='small')
     ax.set_title(title)
@@ -169,15 +170,19 @@ if __name__ == "__main__":
     haus_column_name = 'haus1'
 
     # Route names
-    route_1_name = 'Route 1 (Gas Station Denim - Amtsgericht)'
-    route_2_name = 'Route 2 (Bremer Platz - Domplatz)'
-    route_3_name = 'Route 3 (Theatre - Castle)'
+    route_A_name = 'Route A (Gas Station Denim - Amtsgericht)'
+    route_B_name = 'Route B (Bremer Platz - Domplatz)'
+    route_C_name = 'Route C (Theatre - Castle)'
 
     # Algorithm labels
     angular_change_djikstra = 'Angular Change'
     angular_change_djikstra_landmark = 'Angular Change\nwith Landmark'
     shortest_distance_a_star = 'Shortest Distance\n(A*)'
     shortest_distance_a_star_landmark = 'Shortest Distance\n(A*) with Landmark'
+
+    # Y Label
+    distance_label = 'Distance (m)'
+    area_label = u'Area (m²)'
 
     ### Template for area ###
     area_csv_file_paths_template = [
@@ -253,46 +258,46 @@ if __name__ == "__main__":
 
     routes_data = [
         {
-            'name': route_1_name,
+            'name': route_A_name,
             'data': generate_data_from_cvs(area_csv_file_paths_1),
-            'output': 'area_route_1.png',
+            'output': 'area_route_A.png',
             'title': 'Area Between',
-            'y_label': 'Area'
+            'y_label': area_label
         },
         {
-            'name': route_2_name,
+            'name': route_B_name,
             'data': generate_data_from_cvs(area_csv_file_paths_2),
-            'output': 'area_route_2.png',
+            'output': 'area_route_B.png',
             'title': 'Area Between',
-            'y_label': 'Area'
+            'y_label': area_label
         },
         {
-            'name': route_3_name,
+            'name': route_C_name,
             'data': generate_data_from_cvs(area_csv_file_paths_3),
-            'output': 'area_route_3.png',
+            'output': 'area_route_C.png',
             'title': 'Area Between',
-            'y_label': 'Area',
+            'y_label': area_label
         },
                 {
-            'name': route_1_name,
+            'name': route_A_name,
             'data': generate_data_from_cvs(distance_csv_file_paths_1),
-            'output': 'distance_route_1.png',
+            'output': 'distance_route_A.png',
             'title': 'Hausdorff Distance',
-            'y_label': 'Distance'
+            'y_label': distance_label
         },
         {
-            'name': route_2_name,
+            'name': route_B_name,
             'data': generate_data_from_cvs(distance_csv_file_paths_2),
-            'output': 'distance_route_2.png',
+            'output': 'distance_route_B.png',
             'title': 'Hausdorff Distance',
-            'y_label': 'Distance'
+            'y_label': distance_label
         },
         {
-            'name': route_3_name,
+            'name': route_C_name,
             'data': generate_data_from_cvs(distance_csv_file_paths_3),
-            'output': 'distance_route_3.png',
+            'output': 'distance_route_C.png',
             'title': 'Hausdorff Distance',
-            'y_label': 'Distance',
+            'y_label': distance_label,
         },
     ]
 
@@ -445,14 +450,14 @@ if __name__ == "__main__":
             'data': generate_data_from_cvs(area_summary_csv_file_paths),
             'output': 'area_between_summary.png',
             'title': 'Area Between',
-            'y_label': 'Area',
+            'y_label': area_label,
         },
         {
             'name': 'All Route',
             'data': generate_data_from_cvs(distance_summary_csv_file_paths),
             'output': 'distance_haudorff_summary.png',
             'title': 'Hausdorff Distance',
-            'y_label': 'Distance',
+            'y_label': distance_label,
         },
     ]
 

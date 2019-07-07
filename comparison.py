@@ -129,7 +129,7 @@ def bar_chart_with_std(means, stds, labels, title, y_label, file_name=''):
         yerr=stds,
         align='center',
         capsize=10,
-        color=['red', 'green', 'blue', 'orange'],
+        color=['#C500FF', '#00FFC5', '#0070FF', '#E6E600'],
         zorder=2
         )
     # Make sure the error bar is visible

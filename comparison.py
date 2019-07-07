@@ -158,7 +158,12 @@ if __name__ == "__main__":
     csv_directory = '/home/ismailsunni/Documents/GeoTech/Routing/csv_comparison/'
     area_csv_sub_dir = 'Area comparison csv'
     distance_csv_sub_dir = 'distance comparison csv'
-    output_directory = '/home/ismailsunni/dev/python/routing/test/output'
+    # date_directory = 'July5'
+    date_directory = 'July6'
+
+    output_directory = '/home/ismailsunni/dev/python/routing/test/output/'
+    barchart_output_directory = os.path.join(output_directory, 'barchart', date_directory)
+    merge_csv_directory = os.path.join(output_directory, 'merged_csv')
 
     esri_column_name = 'SUM_Shape_Area'
     haus_column_name = 'haus1'
@@ -166,22 +171,22 @@ if __name__ == "__main__":
     ### Template for area ###
     area_csv_file_paths_template = [
         [
-            os.path.join(csv_directory, area_csv_sub_dir, 'Angular_change_areaXXX.csv'),
+            os.path.join(csv_directory, area_csv_sub_dir, date_directory, 'Angular_change_areaXXX.csv'),
             esri_column_name,
             'Angular change'
         ],
         [
-            os.path.join(csv_directory, area_csv_sub_dir, 'Angular_change_landmark_areaXXX.csv'),
+            os.path.join(csv_directory, area_csv_sub_dir, date_directory, 'Angular_change_landmark_areaXXX.csv'),
             esri_column_name,
             'Angular change \n with landmark'
         ],
         [
-            os.path.join(csv_directory, area_csv_sub_dir, 'Astar_area_XXX.csv'),
+            os.path.join(csv_directory, area_csv_sub_dir, date_directory, 'Astar_area_XXX.csv'),
             esri_column_name,
             'A*'
         ],
         [
-            os.path.join(csv_directory, area_csv_sub_dir, 'Astar_landmark_areaXXX.csv'),
+            os.path.join(csv_directory, area_csv_sub_dir, date_directory, 'Astar_landmark_areaXXX.csv'),
             esri_column_name,
             'A* with landmark'
         ],
@@ -202,22 +207,22 @@ if __name__ == "__main__":
     ### Template for distance ###
     distance_csv_file_paths_template = [
         [
-            os.path.join(csv_directory, distance_csv_sub_dir, 'Angular_change_XXX.csv'),
+            os.path.join(csv_directory, distance_csv_sub_dir, date_directory, 'Angular_change_XXX.csv'),
             haus_column_name,
             'Angular change'
         ],
         [
-            os.path.join(csv_directory, distance_csv_sub_dir, 'Angular_change_landmark_XXX.csv'),
+            os.path.join(csv_directory, distance_csv_sub_dir, date_directory, 'Angular_change_landmark_XXX.csv'),
             haus_column_name,
             'Angular change \n with landmark'
         ],
         [
-            os.path.join(csv_directory, distance_csv_sub_dir, 'a_star_XXX.csv'),
+            os.path.join(csv_directory, distance_csv_sub_dir, date_directory, 'a_star_XXX.csv'),
             haus_column_name,
             'A*'
         ],
         [
-            os.path.join(csv_directory, distance_csv_sub_dir, 'a_star_landmark_XXX.csv'),
+            os.path.join(csv_directory, distance_csv_sub_dir, date_directory, 'a_star_landmark_XXX.csv'),
             haus_column_name,
             'A* with landmark'
         ],
@@ -234,6 +239,10 @@ if __name__ == "__main__":
     distance_csv_file_paths_3 = deepcopy(distance_csv_file_paths_template)
     for csv_file_path in distance_csv_file_paths_3:
         csv_file_path[0] = csv_file_path[0].replace('XXX', 'C')
+
+    route_1_name = 'Route 1 (Gas Station Denim - Amtsgericht)'
+    route_2_name = 'Route 2 (Bremer Platz - Domplatz)'
+    route_3_name = 'Route 3 (Theatre - Castle)'
 
     routes_data = [
         {
@@ -282,6 +291,7 @@ if __name__ == "__main__":
 
     # merged CSV for area
     area_angular_change_summary_csv = 'area_angular_change_summary.csv'
+    area_angular_change_summary_csv = os.path.join(merge_csv_directory, area_angular_change_summary_csv)
     csv_files = [
         area_csv_file_paths_1[0][0],
         area_csv_file_paths_2[0][0],
@@ -291,6 +301,7 @@ if __name__ == "__main__":
     merge_csv(csv_files, esri_column_name, area_angular_change_summary_csv)
 
     area_angular_change_landmark_summary_csv = 'area_angular_change_landmark_summary.csv'
+    area_angular_change_landmark_summary_csv = os.path.join(merge_csv_directory, area_angular_change_landmark_summary_csv)
     csv_files = [
         area_csv_file_paths_1[1][0],
         area_csv_file_paths_2[1][0],
@@ -300,6 +311,7 @@ if __name__ == "__main__":
     merge_csv(csv_files, esri_column_name, area_angular_change_landmark_summary_csv)
 
     area_a_star_summary_csv = 'area_a_star_summary.csv'
+    area_a_star_summary_csv = os.path.join(merge_csv_directory, area_a_star_summary_csv)
     csv_files = [
         area_csv_file_paths_1[2][0],
         area_csv_file_paths_2[2][0],
@@ -309,8 +321,9 @@ if __name__ == "__main__":
     merge_csv(csv_files, esri_column_name, area_a_star_summary_csv)
 
     area_a_star_landmark_summary_csv = 'area_a_star_landmark_summary.csv'
+    area_a_star_landmark_summary_csv = os.path.join(merge_csv_directory, area_a_star_landmark_summary_csv)
     csv_files = [
-        area_csv_file_paths_1[2][0],
+        area_csv_file_paths_1[3][0],
         area_csv_file_paths_2[3][0],
         area_csv_file_paths_3[3][0],
 
@@ -342,6 +355,7 @@ if __name__ == "__main__":
 
     # merged CSV for Hausdorff Distance
     distance_angular_change_summary_csv = 'distance_angular_change_summary.csv'
+    distance_angular_change_summary_csv = os.path.join(merge_csv_directory, distance_angular_change_summary_csv)
     csv_files = [
         distance_csv_file_paths_1[0][0],
         distance_csv_file_paths_2[0][0],
@@ -350,6 +364,7 @@ if __name__ == "__main__":
     merge_csv(csv_files, haus_column_name, distance_angular_change_summary_csv)
 
     distance_angular_change_landmark_summary_csv = 'distance_angular_change_landmark_summary.csv'
+    distance_angular_change_landmark_summary_csv = os.path.join(merge_csv_directory, distance_angular_change_landmark_summary_csv)
     csv_files = [
         distance_csv_file_paths_1[1][0],
         distance_csv_file_paths_2[1][0],
@@ -358,6 +373,7 @@ if __name__ == "__main__":
     merge_csv(csv_files, haus_column_name, distance_angular_change_landmark_summary_csv)
 
     distance_a_star_summary_csv = 'distance_a_star_summary.csv'
+    distance_a_star_summary_csv = os.path.join(merge_csv_directory, distance_a_star_summary_csv)
     csv_files = [
         distance_csv_file_paths_1[2][0],
         distance_csv_file_paths_2[2][0],
@@ -366,6 +382,7 @@ if __name__ == "__main__":
     merge_csv(csv_files, haus_column_name, distance_a_star_summary_csv)
 
     distance_a_star_landmark_summary_csv = 'distance_a_star_landmark_summary.csv'
+    distance_a_star_landmark_summary_csv = os.path.join(merge_csv_directory, distance_a_star_landmark_summary_csv)
     csv_files = [
         distance_csv_file_paths_1[3][0],
         distance_csv_file_paths_2[3][0],
@@ -436,15 +453,12 @@ if __name__ == "__main__":
         },
     ]
 
-
-    # sys.exit()
-
     for route_data in summary_route_data:
-        output_path = os.path.join(output_directory, route_data['output'])
+        output_path = os.path.join(barchart_output_directory, route_data['output'])
         title = route_data['title'] + ' for ' + route_data['name']
         bar_chart_from_data(route_data['data'], title=title, y_label=route_data['y_label'], file_name=output_path)
 
     for route_data in routes_data:
-        output_path = os.path.join(output_directory, route_data['output'])
+        output_path = os.path.join(barchart_output_directory, route_data['output'])
         title = route_data['title'] + ' for ' + route_data['name']
         bar_chart_from_data(route_data['data'], title=title, y_label=route_data['y_label'], file_name=output_path)
